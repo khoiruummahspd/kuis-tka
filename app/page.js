@@ -39,7 +39,7 @@ export default function LoginPage() {
         }
       }
     } else {
-      setError(data.message || 'Login gagal');
+      setError(data.message || 'Login gagal, periksa username dan password');
     }
   };
 
@@ -66,176 +66,193 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={styles.container}>
-      {/* Import Font Inter dari Google Fonts */}
+    <div style={styles.wrapper}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-          background-color: #f3f4f6;
-          margin: 0;
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; }
+        body { margin: 0; background-color: #0f0f15; }
+        @media (max-width: 768px) {
+          .login-card { flex-direction: column-reverse !important; width: 95% !important; }
+          .side-banner { padding: 30px 20px !important; text-align: center; }
         }
       `}</style>
 
-      <div style={styles.card}>
-        <div style={styles.headerBox}>
-          <h2 style={styles.title}>KUIS TKA</h2>
-          <p style={styles.subtitle}>
-            {isMustChange ? 'Pembaruan Password Akun' : 'Portal Pembelajaran & Evaluasi'}
-          </p>
+      <div className="login-card" style={styles.card}>
+        {/* SISI KIRI: FORM LOGIN */}
+        <div style={styles.formSection}>
+          <div style={styles.logoCircle}></div>
+          <h2 style={styles.title}>
+            {isMustChange ? 'Ganti Password' : 'Log in / Masuk Akun'}
+          </h2>
+
+          {error && <div style={styles.errorAlert}>{error}</div>}
+
+          {!isMustChange ? (
+            <form onSubmit={handleLogin}>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>Username</label>
+                <input
+                  type="text"
+                  placeholder="Username siswa / admin"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  style={styles.input}
+                />
+              </div>
+
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>Password</label>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  style={styles.input}
+                />
+              </div>
+
+              <button type="submit" style={styles.btnGradient}>
+                Log in
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleChangePassword}>
+              <p style={styles.infoText}>
+                Password kamu masih default. Masukkan password baru demi keamanan.
+              </p>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>Password Baru</label>
+                <input
+                  type="password"
+                  placeholder="Password baru"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  style={styles.input}
+                />
+              </div>
+              <button type="submit" style={styles.btnGradient}>
+                Simpan Password Baru
+              </button>
+            </form>
+          )}
         </div>
 
-        {error && <div style={styles.errorAlert}>{error}</div>}
-
-        {!isMustChange ? (
-          <form onSubmit={handleLogin}>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Username</label>
-              <input
-                type="text"
-                placeholder="Masukkan username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                style={styles.input}
-              />
-            </div>
-
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Password</label>
-              <input
-                type="password"
-                placeholder="Masukkan password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                style={styles.input}
-              />
-            </div>
-
-            <button type="submit" style={styles.btnPrimary}>
-              Masuk ke Aplikasi
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleChangePassword}>
-            <p style={styles.infoText}>
-              Password kamu masih bawaan/default. Silakan buat password baru agar lebih aman.
-            </p>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Password Baru</label>
-              <input
-                type="password"
-                placeholder="Password baru"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                style={styles.input}
-              />
-            </div>
-            <button type="submit" style={styles.btnSuccess}>
-              Simpan Password Baru
-            </button>
-          </form>
-        )}
+        {/* SISI KANAN: BANNER GRADIENT */}
+        <div className="side-banner" style={styles.bannerSection}>
+          <h1 style={styles.bannerTitle}>Kuis TKA</h1>
+          <p style={styles.bannerText}>
+            Aplikasi kuis interaktif untuk siswa TK A. Mudah dikerjakan, cepat, dan terorganisir.
+          </p>
+        </div>
       </div>
     </div>
   );
 }
 
 const styles = {
-  container: {
+  wrapper: {
     minHeight: '100vh',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: "'Poppins', sans-serif",
     padding: '20px',
   },
   card: {
-    width: '100%',
-    maxWidth: '380px',
+    display: 'flex',
+    width: '850px',
+    maxWidth: '100%',
     backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
-    border: '1px solid #e5e7eb',
-    padding: '32px 24px',
+    borderRadius: '24px',
+    overflow: 'hidden',
+    boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
   },
-  headerBox: {
-    textAlign: 'center',
-    marginBottom: '24px',
+  formSection: {
+    flex: 1,
+    padding: '40px 35px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  logoCircle: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '50%',
+    border: '4px solid #8b5cf6',
+    marginBottom: '15px',
   },
   title: {
-    margin: 0,
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#1e293b',
-    letterSpacing: '-0.5px',
-  },
-  subtitle: {
-    margin: '6px 0 0 0',
-    fontSize: '13px',
-    color: '#64748b',
-    fontWeight: '400',
-  },
-  errorAlert: {
-    backgroundColor: '#fef2f2',
-    color: '#991b1b',
-    border: '1px solid #fecaca',
-    padding: '10px 12px',
-    borderRadius: '6px',
-    fontSize: '13px',
-    marginBottom: '16px',
-    textAlign: 'center',
+    fontSize: '20px',
+    fontWeight: '600',
+    color: '#4b5563',
+    marginBottom: '25px',
   },
   inputGroup: {
-    marginBottom: '18px',
+    marginBottom: '16px',
   },
   label: {
     display: 'block',
-    fontSize: '13px',
-    fontWeight: '500',
-    color: '#334155',
+    fontSize: '12px',
+    color: '#6b7280',
     marginBottom: '6px',
+    fontWeight: '500',
   },
   input: {
     width: '100%',
-    padding: '10px 12px',
-    fontSize: '14px',
-    borderRadius: '6px',
-    border: '1px solid #cbd5e1',
-    boxSizing: 'border-box',
+    padding: '12px 14px',
+    fontSize: '13px',
+    borderRadius: '8px',
+    border: '1px solid #d1d5db',
     outline: 'none',
-    transition: 'border-color 0.2s',
+  },
+  btnGradient: {
+    width: '100%',
+    padding: '12px',
+    marginTop: '10px',
+    border: 'none',
+    borderRadius: '20px',
+    background: 'linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%)',
+    color: '#ffffff',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
+  },
+  errorAlert: {
+    backgroundColor: '#fef2f2',
+    color: '#dc2626',
+    padding: '10px',
+    borderRadius: '6px',
+    fontSize: '12px',
+    marginBottom: '15px',
   },
   infoText: {
+    fontSize: '12px',
+    color: '#6b7280',
+    marginBottom: '15px',
+  },
+  bannerSection: {
+    flex: 1,
+    background: 'linear-gradient(135deg, #a78bfa 0%, #ec4899 50%, #f43f5e 100%)',
+    padding: '50px 40px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    color: '#ffffff',
+  },
+  bannerTitle: {
+    fontSize: '36px',
+    fontWeight: '700',
+    margin: '0 0 10px 0',
+  },
+  bannerText: {
     fontSize: '13px',
-    color: '#475569',
-    marginBottom: '16px',
-    lineHeight: '1.4',
-  },
-  btnPrimary: {
-    width: '100%',
-    padding: '11px',
-    backgroundColor: '#2563eb',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginTop: '6px',
-  },
-  btnSuccess: {
-    width: '100%',
-    padding: '11px',
-    backgroundColor: '#16a34a',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginTop: '6px',
+    lineHeight: '1.6',
+    opacity: 0.9,
+    margin: 0,
   },
 };
 EOF
