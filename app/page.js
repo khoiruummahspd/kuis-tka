@@ -1,4 +1,3 @@
-cat << 'EOF' > app/page.js
 'use client';
 
 import { useState } from 'react';
