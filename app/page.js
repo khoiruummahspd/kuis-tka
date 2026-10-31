@@ -13,7 +13,6 @@ export default function LoginPage() {
   const [showModal, setShowModal] = useState(false);
   const [userId, setUserId] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState('');
 
   const router = useRouter();
@@ -36,11 +35,13 @@ export default function LoginPage() {
         const user = data.user;
         localStorage.setItem('user', JSON.stringify(user));
 
+        // Jika Admin -> masuk dashboard admin
         if (user.role === 'admin') {
           router.push('/admin');
           return;
         }
 
+        // Jika Siswa baru pertama login -> wajib ganti pw
         if (user.isDefaultPassword) {
           setUserId(user.id);
           setShowModal(true);
@@ -48,10 +49,10 @@ export default function LoginPage() {
           router.push('/kuis');
         }
       } else {
-        setErrorMsg(data.message || 'Username atau password salah.');
+        setErrorMsg(data.message || 'Login gagal!');
       }
     } catch (err) {
-      setErrorMsg('Gagal menghubungkan ke server. Periksa koneksi Anda.');
+      setErrorMsg('Gagal menghubungkan ke server.');
     } finally {
       setLoading(false);
     }
@@ -59,7 +60,6 @@ export default function LoginPage() {
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    setModalLoading(true);
     setModalError('');
 
     try {
@@ -72,6 +72,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
+        alert('Password berhasil diubah!');
         setShowModal(false);
         router.push('/kuis');
       } else {
@@ -79,32 +80,32 @@ export default function LoginPage() {
       }
     } catch (err) {
       setModalError('Kesalahan jaringan.');
-    } finally {
-      setModalLoading(false);
     }
   };
 
   return (
     <div style={styles.container}>
-      <div style={styles.loginCard}>
-        {/* Header Branding */}
+      {/* Decorative background blobs */}
+      <div style={styles.bgCircle1} />
+      <div style={styles.bgCircle2} />
+
+      <div style={styles.loginBox}>
         <div style={styles.header}>
-          <div style={styles.badge}>PORTAL BELAJAR</div>
-          <h1 style={styles.title}>Kuis TK A</h1>
-          <p style={styles.subtitle}>Masukkan akun Anda untuk melanjutkan</p>
+          <div style={styles.badge}>🎨 TK PEMBINA</div>
+          <h2 style={styles.title}>PORTAL KUIS TK A</h2>
+          <p style={styles.subtitle}>Masukkan Username & Password untuk memulai</p>
         </div>
 
         {errorMsg && <div style={styles.alert}>{errorMsg}</div>}
 
-        {/* Form Login */}
-        <form onSubmit={handleLogin} style={styles.form}>
+        <form onSubmit={handleLogin}>
           <div style={styles.formGroup}>
             <label style={styles.label}>Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Masukkan username"
+              placeholder="Ketik username kamu..."
               required
               style={styles.input}
             />
@@ -123,42 +124,48 @@ export default function LoginPage() {
           </div>
 
           <button type="submit" disabled={loading} style={styles.button}>
-            {loading ? 'Memproses...' : 'Masuk ke Portal'}
+            {loading ? (
+              <span style={styles.loadingContainer}>
+                <span style={styles.spinner}></span> Memproses...
+              </span>
+            ) : (
+              'MASUK SEKARANG 🚀'
+            )}
           </button>
         </form>
 
-        <div style={styles.footer}>&copy; 2026 TK Pembina. All rights reserved.</div>
+        <div style={styles.footer}>&copy; 2026 Portal Kuis TK Pembina. All rights reserved.</div>
       </div>
 
-      {/* Modal Ganti Password */}
+      {/* Modal Change Password */}
       {showModal && (
         <div style={styles.overlay}>
-          <div style={styles.modalCard}>
+          <div style={styles.modal}>
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>Perbarui Password</h3>
-              <p style={styles.modalSubtitle}>
-                Ini adalah login pertama Anda. Buat password baru demi keamanan akun.
-              </p>
+              <span style={{ fontSize: '24px' }}>🔒</span>
+              <h3 style={styles.modalTitle}>Ganti Password Default</h3>
             </div>
+            <p style={styles.modalSubtitle}>
+              Masukkan password baru pilihanmu untuk menjaga keamanan akun.
+            </p>
 
             {modalError && <div style={styles.alert}>{modalError}</div>}
 
-            <form onSubmit={handleChangePassword} style={styles.form}>
+            <form onSubmit={handleChangePassword}>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Password Baru</label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Minimal 6 karakter"
+                  placeholder="Ketik password baru..."
                   required
-                  minLength={6}
                   style={styles.input}
                 />
               </div>
 
-              <button type="submit" disabled={modalLoading} style={styles.button}>
-                {modalLoading ? 'Menyimpan...' : 'Simpan & Lanjutkan'}
+              <button type="submit" style={styles.modalButton}>
+                SIMPAN & LANJUTKAN ✨
               </button>
             </form>
           </div>
@@ -170,22 +177,50 @@ export default function LoginPage() {
 
 const styles = {
   container: {
-    minHeight: '100vh',
+    backgroundColor: '#f0f4f9',
+    backgroundImage: 'radial-gradient(#e2e8f0 1px, transparent 1px)',
+    backgroundSize: '24px 24px',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    minHeight: '100vh',
+    fontFamily: '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    position: 'relative',
+    overflow: 'hidden',
     padding: '20px',
   },
-  loginCard: {
+  bgCircle1: {
+    position: 'absolute',
+    width: '300px',
+    height: '300px',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+    top: '-50px',
+    left: '-50px',
+    opacity: 0.15,
+    filter: 'blur(40px)',
+  },
+  bgCircle2: {
+    position: 'absolute',
+    width: '350px',
+    height: '350px',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+    bottom: '-80px',
+    right: '-80px',
+    opacity: 0.15,
+    filter: 'blur(50px)',
+  },
+  loginBox: {
     backgroundColor: '#ffffff',
     width: '100%',
-    maxWidth: '380px',
-    padding: '36px 32px',
+    maxWidth: '400px',
+    padding: '36px 30px',
     borderRadius: '16px',
     boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
     border: '1px solid #e2e8f0',
+    position: 'relative',
+    zIndex: 1,
   },
   header: {
     textAlign: 'center',
@@ -193,78 +228,82 @@ const styles = {
   },
   badge: {
     display: 'inline-block',
+    padding: '4px 12px',
+    backgroundColor: '#eff6ff',
+    color: '#2563eb',
     fontSize: '11px',
     fontWeight: '700',
-    letterSpacing: '0.05em',
-    color: '#2563eb',
-    backgroundColor: '#eff6ff',
-    padding: '4px 10px',
     borderRadius: '20px',
+    letterSpacing: '0.5px',
     marginBottom: '10px',
   },
   title: {
+    margin: 0,
     fontSize: '22px',
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#0f172a',
-    margin: '0 0 6px 0',
+    letterSpacing: '-0.5px',
   },
   subtitle: {
+    margin: '6px 0 0 0',
     fontSize: '13px',
     color: '#64748b',
-    margin: 0,
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '18px',
   },
   formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
+    marginBottom: '20px',
   },
   label: {
+    display: 'block',
     fontSize: '13px',
-    fontWeight: '600',
     color: '#334155',
+    marginBottom: '6px',
+    fontWeight: '600',
   },
   input: {
     width: '100%',
-    padding: '10px 14px',
+    padding: '12px 14px',
     fontSize: '14px',
-    color: '#0f172a',
-    backgroundColor: '#f8fafc',
-    border: '1px solid #cbd5e1',
+    border: '1.5px solid #cbd5e1',
     borderRadius: '8px',
     boxSizing: 'border-box',
     outline: 'none',
     transition: 'all 0.2s ease',
+    color: '#1e293b',
+    backgroundColor: '#f8fafc',
   },
   button: {
     width: '100%',
-    padding: '11px',
+    padding: '12px',
     backgroundColor: '#2563eb',
     color: '#ffffff',
     border: 'none',
     borderRadius: '8px',
     fontSize: '14px',
-    fontWeight: '600',
+    fontWeight: '700',
     cursor: 'pointer',
-    marginTop: '6px',
-    transition: 'background-color 0.2s ease',
+    marginTop: '10px',
+    boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)',
+    transition: 'all 0.2s ease',
+  },
+  loadingContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
   },
   alert: {
-    padding: '10px 12px',
+    padding: '10px 14px',
     backgroundColor: '#fef2f2',
     color: '#991b1b',
     border: '1px solid #fecaca',
     borderRadius: '8px',
     fontSize: '13px',
-    marginBottom: '18px',
+    marginBottom: '20px',
     textAlign: 'center',
+    fontWeight: '500',
   },
   footer: {
-    marginTop: '28px',
+    marginTop: '24px',
     textAlign: 'center',
     fontSize: '12px',
     color: '#94a3b8',
@@ -275,36 +314,51 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     backdropFilter: 'blur(4px)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     padding: '20px',
-    zIndex: 50,
+    zIndex: 100,
   },
-  modalCard: {
+  modal: {
     backgroundColor: '#ffffff',
     padding: '28px 24px',
     borderRadius: '16px',
-    maxWidth: '350px',
+    maxWidth: '360px',
     width: '100%',
     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-    border: '1px solid #e2e8f0',
   },
   modalHeader: {
-    marginBottom: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    marginBottom: '6px',
   },
   modalTitle: {
-    fontSize: '18px',
+    fontSize: '17px',
     fontWeight: '700',
     color: '#0f172a',
-    margin: '0 0 6px 0',
+    margin: 0,
   },
   modalSubtitle: {
     fontSize: '13px',
     color: '#64748b',
-    margin: 0,
+    marginBottom: '20px',
     lineHeight: '1.4',
+  },
+  modalButton: {
+    width: '100%',
+    padding: '12px',
+    backgroundColor: '#16a34a',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    marginTop: '5px',
+    boxShadow: '0 4px 6px -1px rgba(22, 163, 74, 0.2)',
   },
 };
