@@ -11,7 +11,6 @@ export default function AdminDashboard() {
   const [results, setResults] = useState([]);
   const [questions, setQuestions] = useState([]);
 
-  // Form States
   const [studentForm, setStudentForm] = useState({ nama: '', username: '', password: '123' });
   const [editUser, setEditUser] = useState(null);
   const [selectedDetail, setSelectedDetail] = useState(null);
@@ -133,125 +132,117 @@ export default function AdminDashboard() {
   return (
     <div style={styles.pageWrapper}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         body { margin: 0; background-color: #f7f4ed; }
       `}</style>
 
-      {/* TOPBAR NAV */}
-      <header style={styles.header}>
-        <div style={styles.logo}>Kuis TKA <span style={styles.adminBadge}>Admin</span></div>
-        <div style={styles.navRight}>
-          <span style={styles.userText}>Halo, <strong>{user.nama || user.username}</strong></span>
+      {/* NAVBAR ATAS UTAMA */}
+      <header style={styles.navbar}>
+        <div style={styles.navBrand}>
+          <span style={styles.logoText}>Kuis TKA</span>
+          <span style={styles.roleTag}>Admin Panel</span>
+        </div>
+
+        <nav style={styles.navMenu}>
+          <button
+            onClick={() => setActiveTab('overview')}
+            style={activeTab === 'overview' ? styles.navItemActive : styles.navItem}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('students')}
+            style={activeTab === 'students' ? styles.navItemActive : styles.navItem}
+          >
+            Data Siswa
+          </button>
+          <button
+            onClick={() => setActiveTab('questions')}
+            style={activeTab === 'questions' ? styles.navItemActive : styles.navItem}
+          >
+            Bank Soal
+          </button>
+          <button
+            onClick={() => setActiveTab('stats')}
+            style={activeTab === 'stats' ? styles.navItemActive : styles.navItem}
+          >
+            Hasil & Statistik
+          </button>
+          <button
+            onClick={() => setActiveTab('account')}
+            style={activeTab === 'account' ? styles.navItemActive : styles.navItem}
+          >
+            Pengaturan Akun
+          </button>
+        </nav>
+
+        <div style={styles.navProfile}>
+          <span style={styles.adminName}>{user.nama || user.username}</span>
           <button onClick={handleLogout} style={styles.btnLogout}>Logout</button>
         </div>
       </header>
 
-      {/* DASHBOARD CONTENT */}
-      <main style={styles.mainContainer}>
-        {/* TABS NAVIGATION */}
-        <div style={styles.tabBar}>
-          <button
-            onClick={() => setActiveTab('overview')}
-            style={activeTab === 'overview' ? styles.activeTabBtn : styles.tabBtn}
-          >
-            📊 Ringkasan Live
-          </button>
-          <button
-            onClick={() => setActiveTab('students')}
-            style={activeTab === 'students' ? styles.activeTabBtn : styles.tabBtn}
-          >
-            👥 Kelola Siswa
-          </button>
+      {/* MAIN CONTENT AREA */}
+      <main style={styles.container}>
 
-          <button
-            onClick={() => setActiveTab('questions')}
-            style={activeTab === 'questions' ? styles.activeTabBtn : styles.tabBtn}
-          >
-            📝 Bank Soal ({questions.length})
-          </button>
-        </div>
-
-        {/* TAB 1: OVERVIEW & MONITORING LIVE */}
+        {/* 1. HALAMAN OVERVIEW */}
         {activeTab === 'overview' && (
-          <div style={styles.tabContent}>
-            <div style={styles.metricsGrid}>
-              <div style={styles.metricCard}>
-                <span style={styles.metricLabel}>Total Siswa</span>
-                <h2 style={styles.metricValue}>{users.length}</h2>
+          <div>
+            <div style={styles.statsGrid}>
+              <div style={styles.statBox}>
+                <span style={styles.statTitle}>TOTAL SISWA</span>
+                <span style={styles.statNumber}>{users.length}</span>
               </div>
-              <div style={styles.metricCard}>
-                <span style={styles.metricLabel}>Total Soal Aktif</span>
-                <h2 style={styles.metricValue}>{questions.length}</h2>
+              <div style={styles.statBox}>
+                <span style={styles.statTitle}>TOTAL SOAL</span>
+                <span style={styles.statNumber}>{questions.length}</span>
               </div>
-              <div style={styles.metricCard}>
-                <span style={styles.metricLabel}>Kuis Terselesaikan</span>
-                <h2 style={styles.metricValue}>{results.length}</h2>
+              <div style={styles.statBox}>
+                <span style={styles.statTitle}>KUIS SELESAI</span>
+                <span style={styles.statNumber}>{results.length}</span>
               </div>
             </div>
 
             <div style={styles.card}>
-              <h3 style={styles.cardTitle}>Live Status Siswa & Hasil Kuis</h3>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={styles.table}>
-                  <thead>
-                    <tr>
-                      <th style={styles.th}>Nama Siswa</th>
-                      <th style={styles.th}>Username</th>
-                      <th style={styles.th}>Perolehan Skor</th>
-                      <th style={styles.th}>Detail Lembar Jawaban</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map((u) => {
-                      const userScores = results.filter((r) => r.userId === u._id);
-                      return (
-                        <tr key={u._id} style={styles.tr}>
-                          <td style={styles.td}><strong>{u.nama || u.username}</strong></td>
-                          <td style={styles.td}>{u.username}</td>
-                          <td style={styles.td}>
-                            {userScores.length > 0 ? (
-                              userScores.map((s, idx) => (
-                                <span key={idx} style={styles.scorePill}>
-                                  {s.kategori === 'matematika' ? 'MTK' : 'B.Indo'}: <b>{s.skor}</b>
-                                </span>
-                              ))
-                            ) : (
-                              <span style={{ color: '#aaa' }}>Belum Mengerjakan</span>
-                            )}
-                          </td>
-                          <td style={styles.td}>
-                            {userScores.length > 0 ? (
-                              userScores.map((s, idx) => (
-                                <button
-                                  key={idx}
-                                  onClick={() => setSelectedDetail(s)}
-                                  style={styles.btnDetail}
-                                >
-                                  Cek {s.kategori === 'matematika' ? 'MTK' : 'B.Indo'}
-                                </button>
-                              ))
-                            ) : '-'}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <h3 style={styles.cardHeader}>Aktivitas Pengerjaan Terakhir</h3>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>Nama Siswa</th>
+                    <th style={styles.th}>Username</th>
+                    <th style={styles.th}>Matematika</th>
+                    <th style={styles.th}>Bahasa Indonesia</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u) => {
+                    const mtk = results.find((r) => r.userId === u._id && r.kategori === 'matematika');
+                    const indo = results.find((r) => r.userId === u._id && r.kategori === 'bahasa_indonesia');
+                    return (
+                      <tr key={u._id} style={styles.tr}>
+                        <td style={styles.td}><strong>{u.nama || u.username}</strong></td>
+                        <td style={styles.td}>{u.username}</td>
+                        <td style={styles.td}>{mtk ? mtk.skor : '-'}</td>
+                        <td style={styles.td}>{indo ? indo.skor : '-'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
 
-        {/* TAB 2: KELOLA SISWA */}
+        {/* 2. HALAMAN DATA SISWA */}
         {activeTab === 'students' && (
-          <div style={styles.tabContent}>
-            <div style={{ ...styles.card, marginBottom: '24px' }}>
-              <h3 style={styles.cardTitle}>Tambah Akun Siswa Baru</h3>
-              <form onSubmit={handleAddStudent} style={styles.formGrid}>
+          <div>
+            <div style={{ ...styles.card, marginBottom: '20px' }}>
+              <h3 style={styles.cardHeader}>Tambah Akun Siswa</h3>
+              <form onSubmit={handleAddStudent} style={styles.formRow}>
                 <input
                   type="text"
-                  placeholder="Nama Lengkap Siswa"
+                  placeholder="Nama Lengkap"
                   value={studentForm.nama}
                   onChange={(e) => setStudentForm({ ...studentForm, nama: e.target.value })}
                   required
@@ -273,12 +264,12 @@ export default function AdminDashboard() {
                   required
                   style={styles.input}
                 />
-                <button type="submit" style={styles.btnOrange}>+ Simpan Siswa</button>
+                <button type="submit" style={styles.btnPrimary}>Tambah Siswa</button>
               </form>
             </div>
 
             <div style={styles.card}>
-              <h3 style={styles.cardTitle}>Daftar Akun Siswa</h3>
+              <h3 style={styles.cardHeader}>Daftar Akun Siswa</h3>
               <table style={styles.table}>
                 <thead>
                   <tr>
@@ -295,11 +286,11 @@ export default function AdminDashboard() {
                       <td style={styles.td}>
                         <button
                           onClick={() => setEditUser({ _id: u._id, nama: u.nama, username: u.username, password: '' })}
-                          style={styles.btnActionEdit}
+                          style={styles.btnSec}
                         >
                           Edit
                         </button>
-                        <button onClick={() => handleDeleteUser(u._id)} style={styles.btnActionDelete}>Hapus</button>
+                        <button onClick={() => handleDeleteUser(u._id)} style={styles.btnDanger}>Hapus</button>
                       </td>
                     </tr>
                   ))}
@@ -309,14 +300,14 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* TAB 3: BANK SOAL */}
+        {/* 3. HALAMAN BANK SOAL */}
         {activeTab === 'questions' && (
-          <div style={styles.tabContent}>
-            <div style={{ ...styles.card, marginBottom: '24px' }}>
-              <h3 style={styles.cardTitle}>Buat Soal Kuis Baru</h3>
+          <div>
+            <div style={{ ...styles.card, marginBottom: '20px' }}>
+              <h3 style={styles.cardHeader}>Tambah Soal Baru</h3>
               <form onSubmit={handleAddQuestion}>
-                <div style={{ marginBottom: '14px' }}>
-                  <label style={styles.label}>Kategori Soal</label>
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={styles.label}>Kategori</label>
                   <select
                     value={questionForm.kategori}
                     onChange={(e) => setQuestionForm({ ...questionForm, kategori: e.target.value })}
@@ -327,11 +318,11 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                <div style={{ marginBottom: '14px' }}>
-                  <label style={styles.label}>Pertanyaan Soal</label>
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={styles.label}>Teks Soal</label>
                   <input
                     type="text"
-                    placeholder="Tuliskan teks pertanyaan..."
+                    placeholder="Masukkan pertanyaan"
                     value={questionForm.soal}
                     onChange={(e) => setQuestionForm({ ...questionForm, soal: e.target.value })}
                     required
@@ -340,12 +331,12 @@ export default function AdminDashboard() {
                 </div>
 
                 <label style={styles.label}>Pilihan Jawaban</label>
-                <div style={styles.opsiGrid}>
+                <div style={styles.grid2}>
                   {questionForm.opsi.map((op, idx) => (
                     <input
                       key={idx}
                       type="text"
-                      placeholder={`Pilihan ${String.fromCharCode(65 + idx)}`}
+                      placeholder={`Opsi ${String.fromCharCode(65 + idx)}`}
                       value={op}
                       onChange={(e) => {
                         const nextOpsi = [...questionForm.opsi];
@@ -358,36 +349,35 @@ export default function AdminDashboard() {
                   ))}
                 </div>
 
-                <div style={{ margin: '14px 0 20px 0' }}>
-                  <label style={styles.label}>Kunci Jawaban yang Benar</label>
+                <div style={{ margin: '12px 0 18px 0' }}>
+                  <label style={styles.label}>Kunci Jawaban</label>
                   <select
                     value={questionForm.jawabanBenar}
                     onChange={(e) => setQuestionForm({ ...questionForm, jawabanBenar: parseInt(e.target.value) })}
                     style={styles.input}
                   >
-                    <option value={0}>Pilihan A</option>
-                    <option value={1}>Pilihan B</option>
-                    <option value={2}>Pilihan C</option>
-                    <option value={3}>Pilihan D</option>
+                    <option value={0}>Opsi A</option>
+                    <option value={1}>Opsi B</option>
+                    <option value={2}>Opsi C</option>
+                    <option value={3}>Opsi D</option>
                   </select>
                 </div>
 
-                <button type="submit" style={styles.btnOrange}>+ Simpan Soal Kuis</button>
+                <button type="submit" style={styles.btnPrimary}>Simpan Soal</button>
               </form>
             </div>
 
             <div style={styles.card}>
-              <h3 style={styles.cardTitle}>Daftar Soal Tersimpan</h3>
+              <h3 style={styles.cardHeader}>Daftar Soal Aktif</h3>
               {questions.map((q, idx) => (
-                <div key={q._id || idx} style={styles.questionItem}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                    <span style={styles.badgeCategory}>{q.kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}</span>
-                    <span style={{ fontSize: '12px', color: '#888' }}>Soal #{idx + 1}</span>
+                <div key={q._id || idx} style={styles.itemBox}>
+                  <div style={{ fontSize: '11px', color: '#888', marginBottom: '4px' }}>
+                    {q.kategori.toUpperCase()} — Soal #{idx + 1}
                   </div>
-                  <strong style={{ fontSize: '15px', color: '#2d2d2d' }}>{q.soal}</strong>
-                  <div style={styles.opsiPreview}>
+                  <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '8px' }}>{q.soal}</div>
+                  <div style={styles.grid2}>
                     {q.opsi.map((op, i) => (
-                      <span key={i} style={i === q.jawabanBenar ? styles.opsiCorrect : styles.opsiNormal}>
+                      <span key={i} style={{ fontSize: '12px', color: i === q.jawabanBenar ? '#16a34a' : '#666', fontWeight: i === q.jawabanBenar ? '700' : '400' }}>
                         {String.fromCharCode(65 + i)}. {op}
                       </span>
                     ))}
@@ -397,362 +387,120 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* 4. HALAMAN HASIL & STATISTIK */}
+        {activeTab === 'stats' && (
+          <div style={styles.card}>
+            <h3 style={styles.cardHeader}>Rincian Hasil Lembar Jawaban</h3>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Siswa</th>
+                  <th style={styles.th}>Kategori</th>
+                  <th style={styles.th}>Skor</th>
+                  <th style={styles.th}>Detail Jawaban</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.map((r, idx) => (
+                  <tr key={idx} style={styles.tr}>
+                    <td style={styles.td}>{r.nama}</td>
+                    <td style={styles.td}>{r.kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}</td>
+                    <td style={styles.td}><strong>{r.skor}</strong></td>
+                    <td style={styles.td}>
+                      <button onClick={() => setSelectedDetail(r)} style={styles.btnSec}>Lihat Lembar</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* 5. HALAMAN PENGATURAN AKUN */}
+        {activeTab === 'account' && (
+          <div style={styles.card}>
+            <h3 style={styles.cardHeader}>Informasi Akun Admin</h3>
+            <div style={{ fontSize: '13px', lineHeight: '1.8', color: '#444' }}>
+              <p><strong>Username:</strong> {user.username}</p>
+              <p><strong>Role:</strong> Administrator System</p>
+              <p><strong>Status Koneksi:</strong> MongoDB Atlas Connected</p>
+            </div>
+          </div>
+        )}
+
       </main>
 
-      {/* MODAL EDIT SISWA */}
+      {/* MODALS */}
       {editUser && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalCard}>
-            <h3 style={styles.cardTitle}>Edit Akun Siswa</h3>
+        <div style={styles.overlay}>
+          <div style={styles.modal}>
+            <h4 style={{ margin: '0 0 12px 0' }}>Edit Siswa</h4>
             <form onSubmit={handleSaveEditUser}>
-              <input
-                type="text"
-                value={editUser.nama}
-                onChange={(e) => setEditUser({ ...editUser, nama: e.target.value })}
-                required
-                style={{ ...styles.input, marginBottom: '10px' }}
-              />
-              <input
-                type="text"
-                value={editUser.username}
-                onChange={(e) => setEditUser({ ...editUser, username: e.target.value })}
-                required
-                style={{ ...styles.input, marginBottom: '10px' }}
-              />
-              <input
-                type="password"
-                placeholder="Password Baru (Kosongkan jika tak diubah)"
-                value={editUser.password}
-                onChange={(e) => setEditUser({ ...editUser, password: e.target.value })}
-                style={{ ...styles.input, marginBottom: '16px' }}
-              />
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                <button type="button" onClick={() => setEditUser(null)} style={styles.btnCancel}>Batal</button>
-                <button type="submit" style={styles.btnOrange}>Simpan</button>
+              <input type="text" value={editUser.nama} onChange={(e) => setEditUser({ ...editUser, nama: e.target.value })} required style={{ ...styles.input, marginBottom: '8px' }} />
+              <input type="text" value={editUser.username} onChange={(e) => setEditUser({ ...editUser, username: e.target.value })} required style={{ ...styles.input, marginBottom: '8px' }} />
+              <input type="password" placeholder="Password Baru (Kosongkan jika tidak ubah)" value={editUser.password} onChange={(e) => setEditUser({ ...editUser, password: e.target.value })} style={{ ...styles.input, marginBottom: '14px' }} />
+              <div style={{ textAlign: 'right' }}>
+                <button type="button" onClick={() => setEditUser(null)} style={{ ...styles.btnSec, marginRight: '6px' }}>Batal</button>
+                <button type="submit" style={styles.btnPrimary}>Simpan</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* MODAL DETAIL JAWABAN */}
       {selectedDetail && (
-        <div style={styles.modalOverlay}>
-          <div style={{ ...styles.modalCard, maxWidth: '520px' }}>
-            <h3 style={styles.cardTitle}>Lembar Jawaban: {selectedDetail.nama}</h3>
-            <p style={{ fontSize: '13px', color: '#666', marginBottom: '16px' }}>
-              Kategori: <b>{selectedDetail.kategori}</b> | Nilai Akhir: <b>{selectedDetail.skor}</b>
-            </p>
-            <div style={{ maxHeight: '320px', overflowY: 'auto', marginBottom: '16px' }}>
+        <div style={styles.overlay}>
+          <div style={{ ...styles.modal, maxWidth: '480px' }}>
+            <h4 style={{ margin: '0 0 4px 0' }}>Lembar Jawaban: {selectedDetail.nama}</h4>
+            <p style={{ fontSize: '12px', color: '#666', marginBottom: '12px' }}>Kategori: {selectedDetail.kategori} | Skor: {selectedDetail.skor}</p>
+            <div style={{ maxHeight: '260px', overflowY: 'auto', marginBottom: '14px' }}>
               {selectedDetail.detailJawaban?.map((d, i) => (
-                <div key={i} style={styles.answerItem}>
-                  <p style={{ margin: '0 0 6px 0', fontWeight: '600', fontSize: '13px' }}>{i + 1}. {d.soal}</p>
-                  <p style={{ margin: '2px 0', fontSize: '12px' }}>Jawaban Siswa: <b>{d.jawabanSiswa}</b></p>
-                  <p style={{ margin: '2px 0', fontSize: '12px' }}>
-                    Status: {d.isCorrect ? <span style={{ color: '#16a34a', fontWeight: '700' }}>BENAR</span> : <span style={{ color: '#dc2626', fontWeight: '700' }}>SALAH (Kunci: {d.jawabanBenar})</span>}
-                  </p>
+                <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid #eee', fontSize: '12px' }}>
+                  <p style={{ margin: '0 0 4px 0', fontWeight: '600' }}>{i + 1}. {d.soal}</p>
+                  <p style={{ margin: 0 }}>Jawaban: {d.jawabanSiswa} | Status: <strong style={{ color: d.isCorrect ? '#16a34a' : '#dc2626' }}>{d.isCorrect ? 'BENAR' : `SALAH (Benar: ${d.jawabanBenar})`}</strong></p>
                 </div>
               ))}
             </div>
-            <button onClick={() => setSelectedDetail(null)} style={styles.btnOrange}>Tutup</button>
+            <button onClick={() => setSelectedDetail(null)} style={styles.btnPrimary}>Tutup</button>
           </div>
         </div>
       )}
-
-      {/* FOOTER */}
-      <footer style={styles.footer}>
-        <span>© 2026 <strong>tka lidam</strong>. admin control panel.</span>
-      </footer>
     </div>
   );
 }
 
 const styles = {
-  pageWrapper: {
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
-    backgroundColor: '#f7f4ed',
-    color: '#2d2d2d',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '20px 40px',
-    backgroundColor: '#ffffff',
-    borderBottom: '1px solid #eae5d9',
-  },
-  logo: {
-    fontSize: '20px',
-    fontWeight: '800',
-    color: '#1a1a1a',
-  },
-  adminBadge: {
-    fontSize: '11px',
-    backgroundColor: '#f6ca85',
-    padding: '3px 8px',
-    borderRadius: '6px',
-    marginLeft: '6px',
-    fontWeight: '700',
-  },
-  navRight: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-  },
-  userText: {
-    fontSize: '13px',
-    color: '#555',
-  },
-  btnLogout: {
-    padding: '8px 16px',
-    borderRadius: '8px',
-    border: '1px solid #e2ddd0',
-    backgroundColor: '#faf8f5',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-  mainContainer: {
-    flex: 1,
-    maxWidth: '1000px',
-    width: '100%',
-    margin: '0 auto',
-    padding: '30px 20px',
-  },
-  tabBar: {
-    display: 'flex',
-    gap: '10px',
-    marginBottom: '24px',
-  },
-  tabBtn: {
-    padding: '10px 18px',
-    borderRadius: '10px',
-    border: '1px solid #e2ddd0',
-    backgroundColor: '#ffffff',
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#666',
-    cursor: 'pointer',
-  },
-  activeTabBtn: {
-    padding: '10px 18px',
-    borderRadius: '10px',
-    border: 'none',
-    backgroundColor: '#f6ca85',
-    fontSize: '13px',
-    fontWeight: '700',
-    color: '#1a1a1a',
-    cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(246, 202, 133, 0.4)',
-  },
-  tabContent: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  metricsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '16px',
-    marginBottom: '24px',
-  },
-  metricCard: {
-    backgroundColor: '#ffffff',
-    padding: '20px',
-    borderRadius: '16px',
-    border: '1px solid #eae5d9',
-    boxShadow: '0 10px 20px rgba(0,0,0,0.02)',
-  },
-  metricLabel: {
-    fontSize: '12px',
-    color: '#777',
-    fontWeight: '600',
-  },
-  metricValue: {
-    fontSize: '32px',
-    fontWeight: '800',
-    color: '#1a1a1a',
-    margin: '6px 0 0 0',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: '20px',
-    padding: '28px',
-    border: '1px solid #eae5d9',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.02)',
-  },
-  cardTitle: {
-    fontSize: '18px',
-    fontWeight: '700',
-    color: '#1a1a1a',
-    margin: '0 0 20px 0',
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    textAlign: 'left',
-  },
-  th: {
-    padding: '12px 14px',
-    fontSize: '12px',
-    fontWeight: '700',
-    color: '#888',
-    borderBottom: '1px solid #eee',
-  },
-  tr: {
-    borderBottom: '1px solid #fafafa',
-  },
-  td: {
-    padding: '14px',
-    fontSize: '13px',
-    color: '#333',
-  },
-  scorePill: {
-    display: 'inline-block',
-    padding: '4px 8px',
-    backgroundColor: '#faf8f5',
-    border: '1px solid #e2ddd0',
-    borderRadius: '6px',
-    fontSize: '12px',
-    marginRight: '6px',
-  },
-  btnDetail: {
-    padding: '4px 10px',
-    fontSize: '11px',
-    borderRadius: '6px',
-    border: '1px solid #e2ddd0',
-    backgroundColor: '#ffffff',
-    cursor: 'pointer',
-    marginRight: '4px',
-    fontWeight: '600',
-  },
-  formGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '12px',
-  },
-  input: {
-    width: '100%',
-    padding: '12px 14px',
-    borderRadius: '10px',
-    border: '1px solid #e2ddd0',
-    backgroundColor: '#faf8f5',
-    fontSize: '13px',
-    outline: 'none',
-  },
-  label: {
-    display: 'block',
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#555',
-    marginBottom: '6px',
-  },
-  btnOrange: {
-    padding: '12px 20px',
-    backgroundColor: '#f6ca85',
-    border: 'none',
-    borderRadius: '10px',
-    fontSize: '13px',
-    fontWeight: '700',
-    color: '#1a1a1a',
-    cursor: 'pointer',
-  },
-  btnCancel: {
-    padding: '12px 20px',
-    backgroundColor: '#faf8f5',
-    border: '1px solid #e2ddd0',
-    borderRadius: '10px',
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#555',
-    cursor: 'pointer',
-  },
-  btnActionEdit: {
-    padding: '6px 12px',
-    fontSize: '12px',
-    borderRadius: '6px',
-    border: '1px solid #e2ddd0',
-    backgroundColor: '#ffffff',
-    marginRight: '6px',
-    cursor: 'pointer',
-  },
-  btnActionDelete: {
-    padding: '6px 12px',
-    fontSize: '12px',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#fef2f2',
-    color: '#dc2626',
-    cursor: 'pointer',
-    fontWeight: '600',
-  },
-  opsiGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '10px',
-  },
-  questionItem: {
-    padding: '16px',
-    borderRadius: '12px',
-    border: '1px solid #eae5d9',
-    backgroundColor: '#faf8f5',
-    marginBottom: '12px',
-  },
-  badgeCategory: {
-    fontSize: '11px',
-    fontWeight: '700',
-    backgroundColor: '#e2ddd0',
-    padding: '2px 8px',
-    borderRadius: '4px',
-    color: '#444',
-  },
-  opsiPreview: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '12px',
-    marginTop: '10px',
-    fontSize: '12px',
-  },
-  opsiNormal: {
-    color: '#666',
-  },
-  opsiCorrect: {
-    color: '#16a34a',
-    fontWeight: '700',
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-    padding: '20px',
-  },
-  modalCard: {
-    width: '100%',
-    maxWidth: '400px',
-    backgroundColor: '#ffffff',
-    borderRadius: '20px',
-    padding: '28px',
-    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-  },
-  answerItem: {
-    padding: '10px',
-    borderBottom: '1px solid #eee',
-  },
-  footer: {
-    textAlign: 'center',
-    padding: '24px 20px',
-    fontSize: '13px',
-    color: '#777777',
-    borderTop: '1px solid #eee8db',
-    backgroundColor: '#f7f4ed',
-  },
+  pageWrapper: { minHeight: '100vh', fontFamily: "'Plus Jakarta Sans', sans-serif", backgroundColor: '#f7f4ed', color: '#2d2d2d' },
+  navbar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 32px', backgroundColor: '#ffffff', borderBottom: '1px solid #eae5d9' },
+  navBrand: { display: 'flex', alignItems: 'center', gap: '8px' },
+  logoText: { fontSize: '18px', fontWeight: '700', color: '#1a1a1a' },
+  roleTag: { fontSize: '11px', backgroundColor: '#f6ca85', padding: '2px 6px', borderRadius: '4px', fontWeight: '600' },
+  navMenu: { display: 'flex', gap: '4px' },
+  navItem: { padding: '8px 14px', borderRadius: '6px', border: 'none', backgroundColor: 'transparent', fontSize: '13px', fontWeight: '500', color: '#666', cursor: 'pointer' },
+  navItemActive: { padding: '8px 14px', borderRadius: '6px', border: 'none', backgroundColor: '#f6ca85', fontSize: '13px', fontWeight: '700', color: '#1a1a1a', cursor: 'pointer' },
+  navProfile: { display: 'flex', alignItems: 'center', gap: '12px' },
+  adminName: { fontSize: '13px', fontWeight: '600', color: '#444' },
+  btnLogout: { padding: '6px 12px', fontSize: '12px', borderRadius: '6px', border: '1px solid #e2ddd0', backgroundColor: '#faf8f5', cursor: 'pointer', fontWeight: '600' },
+  container: { maxWidth: '960px', margin: '0 auto', padding: '24px 16px' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '20px' },
+  statBox: { backgroundColor: '#ffffff', padding: '16px', borderRadius: '12px', border: '1px solid #eae5d9', textAlign: 'center' },
+  statTitle: { fontSize: '11px', color: '#888', fontWeight: '700', letterSpacing: '0.5px' },
+  statNumber: { display: 'block', fontSize: '28px', fontWeight: '800', color: '#1a1a1a', marginTop: '4px' },
+  card: { backgroundColor: '#ffffff', borderRadius: '12px', padding: '20px', border: '1px solid #eae5d9' },
+  cardHeader: { fontSize: '16px', fontWeight: '700', margin: '0 0 16px 0', color: '#1a1a1a' },
+  table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
+  th: { padding: '10px', fontSize: '12px', fontWeight: '700', color: '#888', borderBottom: '1px solid #eee' },
+  tr: { borderBottom: '1px solid #fafafa' },
+  td: { padding: '10px', fontSize: '13px', color: '#333' },
+  formRow: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '8px' },
+  grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' },
+  input: { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e2ddd0', backgroundColor: '#faf8f5', fontSize: '13px', outline: 'none' },
+  label: { display: 'block', fontSize: '12px', fontWeight: '600', color: '#555', marginBottom: '4px' },
+  btnPrimary: { padding: '10px 16px', backgroundColor: '#f6ca85', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '700', color: '#1a1a1a', cursor: 'pointer' },
+  btnSec: { padding: '5px 10px', backgroundColor: '#ffffff', border: '1px solid #e2ddd0', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' },
+  btnDanger: { padding: '5px 10px', backgroundColor: '#fef2f2', border: 'none', color: '#dc2626', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', marginLeft: '4px' },
+  itemBox: { padding: '12px', border: '1px solid #eae5d9', borderRadius: '8px', marginBottom: '8px', backgroundColor: '#faf8f5' },
+  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px' },
+  modal: { width: '100%', maxWidth: '360px', backgroundColor: '#ffffff', borderRadius: '12px', padding: '20px' },
 };
