@@ -6,9 +6,6 @@ import { useRouter } from 'next/navigation';
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [isMustChange, setIsMustChange] = useState(false);
-  const [userTemp, setUserTemp] = useState(null);
   const [error, setError] = useState('');
 
   const router = useRouter();
@@ -26,48 +23,21 @@ export default function LoginPage() {
     const data = await res.json();
 
     if (res.ok && data.success) {
-      if (data.user.isDefaultPassword && data.user.role === 'siswa') {
-        setIsMustChange(true);
-        setUserTemp(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      if (data.user.role === 'admin') {
+        router.push('/admin');
       } else {
-        localStorage.setItem('user', JSON.stringify(data.user));
-        if (data.user.role === 'admin') {
-          router.push('/admin');
-        } else {
-          router.push('/kuis');
-        }
+        router.push('/kuis');
       }
     } else {
       setError(data.message || 'Login gagal, periksa username dan password');
     }
   };
 
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    const res = await fetch('/api/change-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: userTemp.id, newPassword }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok && data.success) {
-      alert('Password berhasil diubah, silakan login kembali!');
-      setIsMustChange(false);
-      setPassword('');
-      setNewPassword('');
-    } else {
-      setError(data.message || 'Gagal mengubah password');
-    }
-  };
-
   return (
     <div style={styles.pageWrapper}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
         body { margin: 0; background-color: #f7f4ed; }
       `}</style>
@@ -81,64 +51,43 @@ export default function LoginPage() {
         {/* FLOATING CARD */}
         <div style={styles.card}>
           <h2 style={styles.cardTitle}>
-            {isMustChange ? 'Ubah Password' : 'Login Akun'}
+            Login Account
           </h2>
           <p style={styles.cardSubtitle}>
-            {isMustChange
-              ? 'Password kamu masih bawaan, silakan perbarui'
-              : 'Masukkan username & password untuk memulai kuis'}
+            Selamat datang kembali! Masukkan kredensial Anda untuk mengakses platform kuis.
           </p>
 
           {error && <div style={styles.errorAlert}>{error}</div>}
 
-          {!isMustChange ? (
-            <form onSubmit={handleLogin}>
-              <div style={styles.inputBox}>
-                <input
-                  type="text"
-                  placeholder="Username / No. Induk"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  style={styles.input}
-                />
-              </div>
+          <form onSubmit={handleLogin}>
+            <div style={styles.inputBox}>
+              <input
+                type="text"
+                placeholder="Username / No. Induk"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                style={styles.input}
+              />
+            </div>
 
-              <div style={styles.inputBox}>
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  style={styles.input}
-                />
-              </div>
+            <div style={styles.inputBox}>
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={styles.input}
+              />
+            </div>
 
-              <button type="submit" style={styles.btnOrange}>
-                Masuk Sekarang
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleChangePassword}>
-              <div style={styles.inputBox}>
-                <input
-                  type="password"
-                  placeholder="Password Baru"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  style={styles.input}
-                />
-              </div>
+            <button type="submit" style={styles.btnOrange}>
+              Masuk Sekarang
+            </button>
+          </form>
 
-              <button type="submit" style={styles.btnOrange}>
-                Simpan Password
-              </button>
-            </form>
-          )}
-
-{/* LOGIN VIA GOOGLE SECTION */}
+          {/* LOGIN VIA GOOGLE SECTION */}
           <div style={styles.dividerBox}>
             <span style={styles.dividerLine}></span>
             <span style={styles.dividerText}>atau masuk dengan</span>
@@ -175,7 +124,14 @@ export default function LoginPage() {
 
       {/* FOOTER */}
       <footer style={styles.footer}>
-        Copyright @KuisTKA 2026 | Privasi & Keamanan
+        <span>© 2026 <strong>KuisTKA</strong>. All rights reserved.</span>
+        <div style={styles.footerLinks}>
+          <a href="#" style={styles.footerLink}>Privasi</a>
+          <span>•</span>
+          <a href="#" style={styles.footerLink}>Keamanan</a>
+          <span>•</span>
+          <a href="#" style={styles.footerLink}>Bantuan</a>
+        </div>
       </footer>
     </div>
   );
@@ -266,16 +222,18 @@ const styles = {
     border: '1px solid #eae5d9',
   },
   cardTitle: {
-    fontSize: '24px',
-    fontWeight: '700',
-    margin: '0 0 8px 0',
+    fontSize: '26px',
+    fontWeight: '800',
+    margin: '0 0 10px 0',
     color: '#1a1a1a',
+    letterSpacing: '-0.5px',
   },
   cardSubtitle: {
-    fontSize: '13px',
-    color: '#777777',
+    fontSize: '14px',
+    color: '#666666',
     margin: '0 0 28px 0',
-    lineHeight: '1.4',
+    lineHeight: '1.5',
+    fontWeight: '400',
   },
   inputBox: {
     marginBottom: '16px',
@@ -357,9 +315,26 @@ const styles = {
     boxShadow: '0 2px 5px rgba(0,0,0,0.03)',
   },
   footer: {
-    textAlign: 'center',
-    padding: '20px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '24px 20px',
+    fontSize: '13px',
+    color: '#777777',
+    borderTop: '1px solid #eee8db',
+    backgroundColor: '#f7f4ed',
+  },
+  footerLinks: {
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
     fontSize: '12px',
-    color: '#888888',
+    color: '#aaa',
+  },
+  footerLink: {
+    color: '#666',
+    textDecoration: 'none',
+    fontWeight: '500',
   },
 };
