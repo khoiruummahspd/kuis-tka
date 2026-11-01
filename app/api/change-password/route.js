@@ -1,39 +1,44 @@
 import clientPromise from '@/lib/mongodb';
-import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 
-export async function POST(request) {
+export async function POST(req) {
   try {
-    const { userId, newPassword } = await request.json();
+    const { userId, newPassword } = await req.json();
 
-    if (!newPassword || newPassword.length < 3) {
-      return NextResponse.json(
-        { success: false, message: 'Password terlalu pendek!' },
+    if (!userId || !newPassword) {
+      return Response.json(
+        { success: false, message: 'Data tidak lengkap' },
         { status: 400 }
       );
     }
 
     const client = await clientPromise;
-    const db = client.db('kuis_tk');
+    const db = client.db('kuis_tka');
 
-    await db.collection('users').updateOne(
+    const result = await db.collection('users').updateOne(
       { _id: new ObjectId(userId) },
-      { 
-        $set: { 
-          password: newPassword.trim(),
-          isDefaultPassword: false 
-        } 
+      {
+        $set: {
+          password: newPassword,
+          isDefaultPassword: false,
+        },
       }
     );
 
-    return NextResponse.json({
-      success: true,
-      message: 'Password berhasil diubah!'
-    });
-
+    if (result.modifiedCount === 1) {
+      return Response.json({
+        success: true,
+        message: 'Password berhasil diperbarui',
+      });
+    } else {
+      return Response.json(
+        { success: false, message: 'User tidak ditemukan' },
+        { status: 404 }
+      );
+    }
   } catch (error) {
-    return NextResponse.json(
-      { success: false, message: 'Gagal memperbarui password' },
+    return Response.json(
+      { success: false, message: error.message },
       { status: 500 }
     );
   }
