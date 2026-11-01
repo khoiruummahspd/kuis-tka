@@ -118,9 +118,9 @@ export default function LoginPage() {
               />
             </svg>
             Google
-          </button>
-        </div>
-      </main>
+        </button>
+      </div>
+    </main>
 
       {/* FOOTER */}
       <footer style={styles.footer}>
