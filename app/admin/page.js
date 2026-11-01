@@ -1,506 +1,287 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-
-export default function AdminDashboard() {
-  const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
-  
-  const [users, setUsers] = useState([]);
-  const [results, setResults] = useState([]);
-  const [questions, setQuestions] = useState([]);
-
-  const [studentForm, setStudentForm] = useState({ nama: '', username: '', password: '123' });
-  const [editUser, setEditUser] = useState(null);
-  const [selectedDetail, setSelectedDetail] = useState(null);
-
-  const [questionForm, setQuestionForm] = useState({
-    kategori: 'matematika',
-    soal: '',
-    opsi: ['', '', '', ''],
-    jawabanBenar: 0,
-  });
-
-  const router = useRouter();
-
-  useEffect(() => {
-    const rawUser = localStorage.getItem('user');
-    if (!rawUser) {
-      router.push('/');
-      return;
+<style>
+    #header-outer.scrolled {
+        background-color: var(--navy);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
     }
-
-    const parsed = JSON.parse(rawUser);
-    if (parsed.role !== 'admin') {
-      router.push('/kuis');
-      return;
-    }
-    setUser(parsed);
-
-    fetchDashboardData();
-    const timer = setInterval(fetchDashboardData, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      const [resUsers, resQ] = await Promise.all([
-        fetch('/api/admin/users'),
-        fetch('/api/admin/questions')
-      ]);
-
-      const dataUsers = await resUsers.json();
-      const dataQ = await resQ.json();
-
-      if (dataUsers.success) {
-        setUsers(dataUsers.users || []);
-        setResults(dataUsers.results || []);
-      }
-      if (dataQ.success) {
-        setQuestions(dataQ.questions || []);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleAddStudent = async (e) => {
-    e.preventDefault();
-    const res = await fetch('/api/admin/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(studentForm),
-    });
-
-    if (!res.ok) return alert('Gagal menambah siswa');
     
-    setStudentForm({ nama: '', username: '', password: '123' });
-    fetchDashboardData();
-  };
+    html[data-theme='light'] #header-outer.scrolled {
+        background-color: var(--header-scrolled-bg);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 6px -1px var(--header-scrolled-shadow), 0 2px 4px -2px var(--header-scrolled-shadow);
+    }
 
-  const handleSaveEditUser = async (e) => {
-    e.preventDefault();
-    const res = await fetch('/api/admin/users', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: editUser._id,
-        nama: editUser.nama,
-        username: editUser.username,
-        newPassword: editUser.password,
-      }),
-    });
+    #mobileThemeToggle {
+        min-width: 2.5rem;
+        min-height: 2.5rem;
+    }
 
-    if (!res.ok) return alert('Gagal memperbarui siswa');
+    .sidebar-nav-link {
+        color: var(--text-muted);
+        transition: background-color 0.2s, color 0.2s;
+        cursor: pointer;
+    }
 
-    setEditUser(null);
-    fetchDashboardData();
-  };
+    .sidebar-nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: var(--text-main);
+    }
 
-  const handleDeleteUser = async (userId) => {
-    if (!confirm('Hapus akun siswa ini?')) return;
-    await fetch('/api/admin/users', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId }),
-    });
-    fetchDashboardData();
-  };
+    .sidebar-nav-link.active {
+        background-color: rgba(255, 255, 255, 0.07);
+        color: var(--text-main);
+        font-weight: 600;
+        position: relative;
+    }
 
-  const handleAddQuestion = async (e) => {
-    e.preventDefault();
-    const res = await fetch('/api/admin/questions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(questionForm),
-    });
+    .sidebar-nav-link.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 60%;
+        width: 4px;
+        background-color: var(--accent-yellow);
+        border-radius: 0 4px 4px 0;
+    }
 
-    if (!res.ok) return alert('Gagal menambah soal');
+    .sidebar-nav-link.active i {
+        color: var(--accent-yellow);
+    }
+    
+    .header-link {
+        color: var(--text);
+        cursor: pointer;
+    }
 
-    setQuestionForm({ kategori: 'matematika', soal: '', opsi: ['', '', '', ''], jawabanBenar: 0 });
-    fetchDashboardData();
-  };
+    .header-link:hover {
+        color: var(--accent-yellow);
+    }
 
-  const handleLogout = () => {
-    localStorage.clear();
-    router.push('/');
-  };
+    html[data-theme='light'] #mobileThemeToggle .theme-icon-dark {
+        color: var(--navy) !important;
+    }
 
-  if (!user) return null;
+    html[data-theme='light'] #mobileThemeToggle {
+        background-color: var(--card-bg);
+        border-color: var(--card-border);
+    }
+</style>
 
-  return (
-    <div style={styles.pageWrapper}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-        * { box-sizing: border-box; }
-        body { margin: 0; background-color: #f7f4ed; }
-      `}</style>
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-[98] hidden"></div>
 
-      {/* NAVBAR ATAS UTAMA */}
-      <header style={styles.navbar}>
-        <div style={styles.navBrand}>
-          <span style={styles.logoText}>Kuis TKA</span>
-          <span style={styles.roleTag}>Admin Panel</span>
+<aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-[var(--navy)] z-[99] transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl shadow-black">
+
+    <div class="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
+        <a href="#overview" class="flex items-center gap-2">
+            <img src="./assets/image/logo/faicon.png" alt="zeyverse" class="h-9 w-9 object-contain rounded-sm bg-white/5 p-1">
+
+            <div>
+                <div class="font-extrabold text-[17px] leading-tight text-white">
+                    <span style="color:var(--accent-blue)">ZEY</span><span style="color:var(--accent-yellow)">VERSE</span>
+                </div>
+            </div>
+        </a>
+
+        <div class="flex items-center gap-2">
+            <button id="closeSidebarBtn" class="p-2 rounded-md text-slate-400 hover:text-white hover:bg-white/10 transition">
+                <i class="fa-solid fa-xmark h-5 w-5"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex-grow overflow-y-auto">
+
+        <div class="px-4 mt-6 mb-2">
+            <p class="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                ADMIN MENU
+            </p>
         </div>
 
-        <nav style={styles.navMenu}>
-          <button
-            onClick={() => setActiveTab('overview')}
-            style={activeTab === 'overview' ? styles.navItemActive : styles.navItem}
-          >
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveTab('students')}
-            style={activeTab === 'students' ? styles.navItemActive : styles.navItem}
-          >
-            Data Siswa
-          </button>
-          <button
-            onClick={() => setActiveTab('questions')}
-            style={activeTab === 'questions' ? styles.navItemActive : styles.navItem}
-          >
-            Bank Soal
-          </button>
-          <button
-            onClick={() => setActiveTab('stats')}
-            style={activeTab === 'stats' ? styles.navItemActive : styles.navItem}
-          >
-            Hasil & Statistik
-          </button>
-          <button
-            onClick={() => setActiveTab('account')}
-            style={activeTab === 'account' ? styles.navItemActive : styles.navItem}
-          >
-            Pengaturan Akun
-          </button>
+        <nav class="sidebar-links">
+            <a href="#overview" class="sidebar-nav-link flex items-center gap-4 px-4 py-3 text-sm rounded-lg mx-2 active">
+                <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                <span>OVERVIEW</span>
+            </a>
+
+            <a href="#students" class="sidebar-nav-link flex items-center gap-4 px-4 py-3 text-sm rounded-lg mx-2">
+                <i class="fa-solid fa-users w-5 text-center"></i>
+                <span>DATA SISWA</span>
+            </a>
+
+            <a href="#questions" class="sidebar-nav-link flex items-center gap-4 px-4 py-3 text-sm rounded-lg mx-2">
+                <i class="fa-solid fa-book-open w-5 text-center"></i>
+                <span>BANK SOAL</span>
+            </a>
+
+            <a href="#stats" class="sidebar-nav-link flex items-center gap-4 px-4 py-3 text-sm rounded-lg mx-2">
+                <i class="fa-solid fa-square-poll-vertical w-5 text-center"></i>
+                <span>HASIL & STATISTIK</span>
+            </a>
+
+            <a href="#account" class="sidebar-nav-link flex items-center gap-4 px-4 py-3 text-sm rounded-lg mx-2">
+                <i class="fa-solid fa-user-gear w-5 text-center"></i>
+                <span>PENGATURAN AKUN</span>
+            </a>
         </nav>
 
-        <div style={styles.navProfile}>
-          <span style={styles.adminName}>{user.nama || user.username}</span>
-          <button onClick={handleLogout} style={styles.btnLogout}>Logout</button>
-        </div>
-      </header>
-
-      {/* MAIN CONTENT AREA */}
-      <main style={styles.container}>
-
-        {/* 1. HALAMAN OVERVIEW */}
-        {activeTab === 'overview' && (
-          <div>
-            <div style={styles.statsGrid}>
-              <div style={styles.statBox}>
-                <span style={styles.statTitle}>TOTAL SISWA</span>
-                <span style={styles.statNumber}>{users.length}</span>
-              </div>
-              <div style={styles.statBox}>
-                <span style={styles.statTitle}>TOTAL SOAL</span>
-                <span style={styles.statNumber}>{questions.length}</span>
-              </div>
-              <div style={styles.statBox}>
-                <span style={styles.statTitle}>KUIS SELESAI</span>
-                <span style={styles.statNumber}>{results.length}</span>
-              </div>
-            </div>
-
-            <div style={styles.card}>
-              <h3 style={styles.cardHeader}>Aktivitas Pengerjaan Terakhir</h3>
-              <table style={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={styles.th}>Nama Siswa</th>
-                    <th style={styles.th}>Username</th>
-                    <th style={styles.th}>Matematika</th>
-                    <th style={styles.th}>Bahasa Indonesia</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u) => {
-                    const mtk = results.find((r) => r.userId === u._id && r.kategori === 'matematika');
-                    const indo = results.find((r) => r.userId === u._id && r.kategori === 'bahasa_indonesia');
-                    return (
-                      <tr key={u._id} style={styles.tr}>
-                        <td style={styles.td}><strong>{u.nama || u.username}</strong></td>
-                        <td style={styles.td}>{u.username}</td>
-                        <td style={styles.td}>{mtk ? mtk.skor : '-'}</td>
-                        <td style={styles.td}>{indo ? indo.skor : '-'}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* 2. HALAMAN DATA SISWA */}
-        {activeTab === 'students' && (
-          <div>
-            <div style={{ ...styles.card, marginBottom: '20px' }}>
-              <h3 style={styles.cardHeader}>Tambah Akun Siswa</h3>
-              <form onSubmit={handleAddStudent} style={styles.formRow}>
-                <input
-                  type="text"
-                  placeholder="Nama Lengkap"
-                  value={studentForm.nama}
-                  onChange={(e) => setStudentForm({ ...studentForm, nama: e.target.value })}
-                  required
-                  style={styles.input}
-                />
-                <input
-                  type="text"
-                  placeholder="Username"
-                  value={studentForm.username}
-                  onChange={(e) => setStudentForm({ ...studentForm, username: e.target.value })}
-                  required
-                  style={styles.input}
-                />
-                <input
-                  type="text"
-                  placeholder="Password Default"
-                  value={studentForm.password}
-                  onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })}
-                  required
-                  style={styles.input}
-                />
-                <button type="submit" style={styles.btnPrimary}>Tambah Siswa</button>
-              </form>
-            </div>
-
-            <div style={styles.card}>
-              <h3 style={styles.cardHeader}>Daftar Akun Siswa</h3>
-              <table style={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={styles.th}>Nama</th>
-                    <th style={styles.th}>Username</th>
-                    <th style={styles.th}>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u) => (
-                    <tr key={u._id} style={styles.tr}>
-                      <td style={styles.td}>{u.nama}</td>
-                      <td style={styles.td}>{u.username}</td>
-                      <td style={styles.td}>
-                        <button
-                          onClick={() => setEditUser({ _id: u._id, nama: u.nama, username: u.username, password: '' })}
-                          style={styles.btnSec}
-                        >
-                          Edit
-                        </button>
-                        <button onClick={() => handleDeleteUser(u._id)} style={styles.btnDanger}>Hapus</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* 3. HALAMAN BANK SOAL */}
-        {activeTab === 'questions' && (
-          <div>
-            <div style={{ ...styles.card, marginBottom: '20px' }}>
-              <h3 style={styles.cardHeader}>Tambah Soal Baru</h3>
-              <form onSubmit={handleAddQuestion}>
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={styles.label}>Kategori</label>
-                  <select
-                    value={questionForm.kategori}
-                    onChange={(e) => setQuestionForm({ ...questionForm, kategori: e.target.value })}
-                    style={styles.input}
-                  >
-                    <option value="matematika">Matematika</option>
-                    <option value="bahasa_indonesia">Bahasa Indonesia</option>
-                  </select>
-                </div>
-
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={styles.label}>Teks Soal</label>
-                  <input
-                    type="text"
-                    placeholder="Masukkan pertanyaan"
-                    value={questionForm.soal}
-                    onChange={(e) => setQuestionForm({ ...questionForm, soal: e.target.value })}
-                    required
-                    style={styles.input}
-                  />
-                </div>
-
-                <label style={styles.label}>Pilihan Jawaban</label>
-                <div style={styles.grid2}>
-                  {questionForm.opsi.map((op, idx) => (
-                    <input
-                      key={idx}
-                      type="text"
-                      placeholder={`Opsi ${String.fromCharCode(65 + idx)}`}
-                      value={op}
-                      onChange={(e) => {
-                        const nextOpsi = [...questionForm.opsi];
-                        nextOpsi[idx] = e.target.value;
-                        setQuestionForm({ ...questionForm, opsi: nextOpsi });
-                      }}
-                      required
-                      style={styles.input}
-                    />
-                  ))}
-                </div>
-
-                <div style={{ margin: '12px 0 18px 0' }}>
-                  <label style={styles.label}>Kunci Jawaban</label>
-                  <select
-                    value={questionForm.jawabanBenar}
-                    onChange={(e) => setQuestionForm({ ...questionForm, jawabanBenar: parseInt(e.target.value) })}
-                    style={styles.input}
-                  >
-                    <option value={0}>Opsi A</option>
-                    <option value={1}>Opsi B</option>
-                    <option value={2}>Opsi C</option>
-                    <option value={3}>Opsi D</option>
-                  </select>
-                </div>
-
-                <button type="submit" style={styles.btnPrimary}>Simpan Soal</button>
-              </form>
-            </div>
-
-            <div style={styles.card}>
-              <h3 style={styles.cardHeader}>Daftar Soal Aktif</h3>
-              {questions.map((q, idx) => (
-                <div key={q._id || idx} style={styles.itemBox}>
-                  <div style={{ fontSize: '11px', color: '#888', marginBottom: '4px' }}>
-                    {q.kategori.toUpperCase()} — Soal #{idx + 1}
-                  </div>
-                  <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '8px' }}>{q.soal}</div>
-                  <div style={styles.grid2}>
-                    {q.opsi.map((op, i) => (
-                      <span key={i} style={{ fontSize: '12px', color: i === q.jawabanBenar ? '#16a34a' : '#666', fontWeight: i === q.jawabanBenar ? '700' : '400' }}>
-                        {String.fromCharCode(65 + i)}. {op}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 4. HALAMAN HASIL & STATISTIK */}
-        {activeTab === 'stats' && (
-          <div style={styles.card}>
-            <h3 style={styles.cardHeader}>Rincian Hasil Lembar Jawaban</h3>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>Siswa</th>
-                  <th style={styles.th}>Kategori</th>
-                  <th style={styles.th}>Skor</th>
-                  <th style={styles.th}>Detail Jawaban</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.map((r, idx) => (
-                  <tr key={idx} style={styles.tr}>
-                    <td style={styles.td}>{r.nama}</td>
-                    <td style={styles.td}>{r.kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}</td>
-                    <td style={styles.td}><strong>{r.skor}</strong></td>
-                    <td style={styles.td}>
-                      <button onClick={() => setSelectedDetail(r)} style={styles.btnSec}>Lihat Lembar</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* 5. HALAMAN PENGATURAN AKUN */}
-        {activeTab === 'account' && (
-          <div style={styles.card}>
-            <h3 style={styles.cardHeader}>Informasi Akun Admin</h3>
-            <div style={{ fontSize: '13px', lineHeight: '1.8', color: '#444' }}>
-              <p><strong>Username:</strong> {user.username}</p>
-              <p><strong>Role:</strong> Administrator System</p>
-              <p><strong>Status Koneksi:</strong> MongoDB Atlas Connected</p>
-            </div>
-          </div>
-        )}
-
-      </main>
-
-      {/* MODALS */}
-      {editUser && (
-        <div style={styles.overlay}>
-          <div style={styles.modal}>
-            <h4 style={{ margin: '0 0 12px 0' }}>Edit Siswa</h4>
-            <form onSubmit={handleSaveEditUser}>
-              <input type="text" value={editUser.nama} onChange={(e) => setEditUser({ ...editUser, nama: e.target.value })} required style={{ ...styles.input, marginBottom: '8px' }} />
-              <input type="text" value={editUser.username} onChange={(e) => setEditUser({ ...editUser, username: e.target.value })} required style={{ ...styles.input, marginBottom: '8px' }} />
-              <input type="password" placeholder="Password Baru (Kosongkan jika tidak ubah)" value={editUser.password} onChange={(e) => setEditUser({ ...editUser, password: e.target.value })} style={{ ...styles.input, marginBottom: '14px' }} />
-              <div style={{ textAlign: 'right' }}>
-                <button type="button" onClick={() => setEditUser(null)} style={{ ...styles.btnSec, marginRight: '6px' }}>Batal</button>
-                <button type="submit" style={styles.btnPrimary}>Simpan</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {selectedDetail && (
-        <div style={styles.overlay}>
-          <div style={{ ...styles.modal, maxWidth: '480px' }}>
-            <h4 style={{ margin: '0 0 4px 0' }}>Lembar Jawaban: {selectedDetail.nama}</h4>
-            <p style={{ fontSize: '12px', color: '#666', marginBottom: '12px' }}>Kategori: {selectedDetail.kategori} | Skor: {selectedDetail.skor}</p>
-            <div style={{ maxHeight: '260px', overflowY: 'auto', marginBottom: '14px' }}>
-              {selectedDetail.detailJawaban?.map((d, i) => (
-                <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid #eee', fontSize: '12px' }}>
-                  <p style={{ margin: '0 0 4px 0', fontWeight: '600' }}>{i + 1}. {d.soal}</p>
-                  <p style={{ margin: 0 }}>Jawaban: {d.jawabanSiswa} | Status: <strong style={{ color: d.isCorrect ? '#16a34a' : '#dc2626' }}>{d.isCorrect ? 'BENAR' : `SALAH (Benar: ${d.jawabanBenar})`}</strong></p>
-                </div>
-              ))}
-            </div>
-            <button onClick={() => setSelectedDetail(null)} style={styles.btnPrimary}>Tutup</button>
-          </div>
-        </div>
-      )}
     </div>
-  );
-}
 
-const styles = {
-  pageWrapper: { minHeight: '100vh', fontFamily: "'Plus Jakarta Sans', sans-serif", backgroundColor: '#f7f4ed', color: '#2d2d2d' },
-  navbar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 32px', backgroundColor: '#ffffff', borderBottom: '1px solid #eae5d9' },
-  navBrand: { display: 'flex', alignItems: 'center', gap: '8px' },
-  logoText: { fontSize: '18px', fontWeight: '700', color: '#1a1a1a' },
-  roleTag: { fontSize: '11px', backgroundColor: '#f6ca85', padding: '2px 6px', borderRadius: '4px', fontWeight: '600' },
-  navMenu: { display: 'flex', gap: '4px' },
-  navItem: { padding: '8px 14px', borderRadius: '6px', border: 'none', backgroundColor: 'transparent', fontSize: '13px', fontWeight: '500', color: '#666', cursor: 'pointer' },
-  navItemActive: { padding: '8px 14px', borderRadius: '6px', border: 'none', backgroundColor: '#f6ca85', fontSize: '13px', fontWeight: '700', color: '#1a1a1a', cursor: 'pointer' },
-  navProfile: { display: 'flex', alignItems: 'center', gap: '12px' },
-  adminName: { fontSize: '13px', fontWeight: '600', color: '#444' },
-  btnLogout: { padding: '6px 12px', fontSize: '12px', borderRadius: '6px', border: '1px solid #e2ddd0', backgroundColor: '#faf8f5', cursor: 'pointer', fontWeight: '600' },
-  container: { maxWidth: '960px', margin: '0 auto', padding: '24px 16px' },
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '20px' },
-  statBox: { backgroundColor: '#ffffff', padding: '16px', borderRadius: '12px', border: '1px solid #eae5d9', textAlign: 'center' },
-  statTitle: { fontSize: '11px', color: '#888', fontWeight: '700', letterSpacing: '0.5px' },
-  statNumber: { display: 'block', fontSize: '28px', fontWeight: '800', color: '#1a1a1a', marginTop: '4px' },
-  card: { backgroundColor: '#ffffff', borderRadius: '12px', padding: '20px', border: '1px solid #eae5d9' },
-  cardHeader: { fontSize: '16px', fontWeight: '700', margin: '0 0 16px 0', color: '#1a1a1a' },
-  table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
-  th: { padding: '10px', fontSize: '12px', fontWeight: '700', color: '#888', borderBottom: '1px solid #eee' },
-  tr: { borderBottom: '1px solid #fafafa' },
-  td: { padding: '10px', fontSize: '13px', color: '#333' },
-  formRow: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '8px' },
-  grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' },
-  input: { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e2ddd0', backgroundColor: '#faf8f5', fontSize: '13px', outline: 'none' },
-  label: { display: 'block', fontSize: '12px', fontWeight: '600', color: '#555', marginBottom: '4px' },
-  btnPrimary: { padding: '10px 16px', backgroundColor: '#f6ca85', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '700', color: '#1a1a1a', cursor: 'pointer' },
-  btnSec: { padding: '5px 10px', backgroundColor: '#ffffff', border: '1px solid #e2ddd0', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' },
-  btnDanger: { padding: '5px 10px', backgroundColor: '#fef2f2', border: 'none', color: '#dc2626', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', marginLeft: '4px' },
-  itemBox: { padding: '12px', border: '1px solid #eae5d9', borderRadius: '8px', marginBottom: '8px', backgroundColor: '#faf8f5' },
-  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px' },
-  modal: { width: '100%', maxWidth: '360px', backgroundColor: '#ffffff', borderRadius: '12px', padding: '20px' },
-};
+    <div class="p-4 mt-auto border-t border-white/10 shrink-0">
+        <div class="flex flex-col gap-2">
+            <button id="sidebarLogoutBtn" class="w-full text-center px-4 py-2 text-sm font-semibold text-[var(--navy)] bg-[var(--accent-yellow)] rounded-lg hover:bg-yellow-400 transition">
+                LOGOUT
+            </button>
+        </div>
+    </div>
+
+</aside>
+
+<header id="header-outer" class="fixed w-full z-50 top-0 transition-all duration-300">
+
+    <div class="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-6 py-3 transition-all duration-300">
+
+        <a href="#overview" class="flex-shrink-0 flex items-center gap-2">
+
+            <img src="./assets/image/logo/faicon.png"
+                 alt="zeyverse"
+                 class="h-9 w-9 object-contain rounded-sm bg-white/5 p-1">
+
+            <div>
+                <div class="font-extrabold text-[17px] leading-tight text-main">
+                    <span style="color:var(--accent-blue)">ZEY</span><span style="color:var(--accent-yellow)">VERSE</span>
+                </div>
+            </div>
+
+        </a>
+
+        <nav class="hidden lg:flex items-center gap-5 xl:gap-6">
+
+            <a href="#overview"
+               class="header-link flex items-center gap-2 text-sm font-semibold transition">
+                <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                <span>OVERVIEW</span>
+            </a>
+
+            <a href="#students"
+               class="header-link flex items-center gap-2 text-sm font-semibold text-muted-color transition">
+                <i class="fa-solid fa-users w-5 text-center"></i>
+                <span>DATA SISWA</span>
+            </a>
+
+            <a href="#questions"
+               class="header-link flex items-center gap-2 text-sm font-semibold text-muted-color transition">
+                <i class="fa-solid fa-book-open w-5 text-center"></i>
+                <span>BANK SOAL</span>
+            </a>
+
+            <a href="#stats"
+               class="header-link flex items-center gap-2 text-sm font-semibold text-muted-color transition">
+                <i class="fa-solid fa-square-poll-vertical w-5 text-center"></i>
+                <span>HASIL & STATISTIK</span>
+            </a>
+
+            <a href="#account"
+               class="header-link flex items-center gap-2 text-sm font-semibold text-muted-color transition">
+                <i class="fa-solid fa-user-gear w-5 text-center"></i>
+                <span>PENGATURAN AKUN</span>
+            </a>
+
+        </nav>
+
+        <div class="flex items-center gap-3">
+
+            <button id="mobileThemeToggle"
+                    class="p-2 rounded-md bg-card-color border border-card-color hover:bg-white/10 transition flex items-center justify-center">
+
+                <i class="fas fa-sun theme-icon-light text-[var(--accent-yellow)] hidden"></i>
+                <i class="fas fa-moon theme-icon-dark text-[var(--accent-yellow)]"></i>
+
+            </button>
+
+            <button id="sidebarBtn"
+                    class="p-2 rounded-md bg-[var(--accent-yellow)] hover:bg-yellow-400 transition lg:hidden">
+
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="h-6 w-6 text-[var(--navy)]"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke="currentColor">
+
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 6h16M4 12h16M4 18h16"/>
+
+                </svg>
+
+            </button>
+
+        </div>
+
+    </div>
+
+</header>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const html = document.documentElement;
+    const headerOuter = document.getElementById('header-outer');
+
+    const sidebar = document.getElementById('sidebar');
+    const sidebarBtn = document.getElementById('sidebarBtn');
+    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    const sidebarLinks = document.querySelectorAll(
+        '.sidebar-links a[href^="#"]'
+    );
+
+    sidebarBtn.addEventListener('click', function() {
+        sidebar.classList.remove('-translate-x-full');
+        sidebarOverlay.classList.remove('hidden');
+    });
+
+    closeSidebarBtn.addEventListener('click', function() {
+        sidebar.classList.add('-translate-x-full');
+        sidebarOverlay.classList.add('hidden');
+    });
+
+    sidebarOverlay.addEventListener('click', function() {
+        sidebar.classList.add('-translate-x-full');
+        sidebarOverlay.classList.add('hidden');
+    });
+
+    sidebarLinks.forEach(link => {
+
+        link.addEventListener('click', function() {
+
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+
+            document.querySelectorAll('.sidebar-nav-link')
+                .forEach(l => l.classList.remove('active'));
+
+            this.classList.add('active');
+
+        });
+
+    });
+
+    function checkScroll() {
+
+        if (window.scrollY > 20) {
+            headerOuter.classList.add('scrolled');
+        } else {
+            headerOuter.classList.remove('scrolled');
+        }
+
+    }
+
+    checkScroll();
+
+    window.addEventListener('scroll', checkScroll);
+
+});
+</script>
