@@ -254,4 +254,3 @@ const styles = {
     margin: 0,
   },
 };
-EOF
