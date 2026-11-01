@@ -54,7 +54,7 @@ export default function LoginPage() {
             Login Account
           </h2>
           <p style={styles.cardSubtitle}>
-            Selamat datang kembali! Masukkan kredensial Anda untuk mengakses platform.
+            Selamat datang kembali! Masukkan kredensial untuk mengakses platform.
           </p>
 
           {error && <div style={styles.errorAlert}>{error}</div>}
@@ -124,7 +124,7 @@ export default function LoginPage() {
 
       {/* FOOTER */}
       <footer style={styles.footer}>
-        <span>© 2026 <strong>KuisTKA</strong>. All rights reserved.</span>
+        <span>© 2026 <strong>tka lidam</strong>. all rights reserved.</span>
       </footer>
     </div>
   );
