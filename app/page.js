@@ -138,7 +138,7 @@ export default function LoginPage() {
             </form>
           )}
 
-          {/* LOGIN VIA GOOGLE SECTION */}
+{/* LOGIN VIA GOOGLE SECTION */}
           <div style={styles.dividerBox}>
             <span style={styles.dividerLine}></span>
             <span style={styles.dividerText}>atau masuk dengan</span>
@@ -150,7 +150,6 @@ export default function LoginPage() {
             onClick={() => alert('Fitur Google Auth bisa disambungkan nanti!')}
             style={styles.googleBtn}
           >
-            {/* Logo Google SVG */}
             <svg width="18" height="18" viewBox="0 0 24 24" style={{ marginRight: '10px' }}>
               <path
                 fill="#4285F4"
@@ -171,8 +170,7 @@ export default function LoginPage() {
             </svg>
             Google
           </button>
-              </div>
-              </div>
+        </div>
       </main>
 
       {/* FOOTER */}
