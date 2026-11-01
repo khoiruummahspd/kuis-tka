@@ -107,78 +107,230 @@ export default function KuisPage() {
 
   if (alreadyTaken) {
     return (
-      <div style={styles.centerBox}>
-        <h3 style={{ color: '#c53030' }}>Perhatian</h3>
-        <p style={{ margin: '15px 0', fontSize: '14px' }}>
-          Kamu sudah pernah mengerjakan kuis kategori <b>{kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}</b>.
-        </p>
-        <button onClick={() => setAlreadyTaken(false)} style={styles.katBtn}>Pilih Kategori Lain</button>
-        <button onClick={handleLogout} style={{ ...styles.katBtn, backgroundColor: '#718096' }}>Logout</button>
+      <div style={styles.pageWrapper}>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+          * { box-sizing: border-box; }
+          body { margin: 0; background-color: #f7f4ed; }
+        `}</style>
+
+        <div style={styles.centerBox}>
+          <div style={styles.alertIcon}>⚠️</div>
+          <h3 style={{ color: '#c53030', margin: '10px 0 5px 0', fontSize: '20px' }}>Perhatian</h3>
+          <p style={{ margin: '15px 0 25px 0', fontSize: '14px', color: '#555', lineHeight: '1.5' }}>
+            Kamu sudah pernah mengerjakan kuis kategori <b>{kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}</b>.
+          </p>
+          <button onClick={() => setAlreadyTaken(false)} style={styles.katBtn}>Pilih Kategori Lain</button>
+          <button onClick={handleLogout} style={{ ...styles.katBtn, backgroundColor: '#e2ddd0', color: '#333' }}>Logout</button>
+        </div>
       </div>
     );
   }
 
   if (!kategori) {
     return (
-      <div style={styles.centerBox}>
-        <div style={{ textAlign: 'right' }}>
-          <button onClick={handleLogout} style={{ padding: '4px 8px', fontSize: '12px', cursor: 'pointer' }}>Logout</button>
+      <div style={styles.pageWrapper}>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+          * { box-sizing: border-box; }
+          body { margin: 0; background-color: #f7f4ed; }
+        `}</style>
+
+        <div style={styles.centerBox}>
+          <div style={{ textAlign: 'right', marginBottom: '10px' }}>
+            <button onClick={handleLogout} style={styles.logoutBtnSmall}>Logout</button>
+          </div>
+          <h2 style={styles.title}>Pilih Kategori Kuis</h2>
+          <p style={{ fontSize: '14px', color: '#666', marginBottom: '25px' }}>Halo <b>{user.nama || user.username}</b>, selamat mengerjakan!</p>
+          
+          <button onClick={() => startKuis('matematika')} style={styles.katBtn}>📐 Matematika</button>
+          <button onClick={() => startKuis('bahasa_indonesia')} style={{ ...styles.katBtn, backgroundColor: '#8b5cf6', color: '#fff' }}>📖 Bahasa Indonesia</button>
         </div>
-        <h2>Pilih Kategori Kuis</h2>
-        <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>Halo {user.nama || user.username}, selamat mengerjakan!</p>
-        <button onClick={() => startKuis('matematika')} style={styles.katBtn}>Matematika</button>
-        <button onClick={() => startKuis('bahasa_indonesia')} style={{ ...styles.katBtn, backgroundColor: '#38a169' }}>Bahasa Indonesia</button>
       </div>
     );
   }
 
   if (isDone) {
     return (
-      <div style={styles.centerBox}>
-        <h2>Kuis Selesai</h2>
-        <p>Nilai Kamu:</p>
-        <h1 style={{ fontSize: '48px', color: '#2b6cb0', margin: '10px 0' }}>{skor}</h1>
-        <button onClick={handleLogout} style={styles.katBtn}>Keluar / Logout</button>
+      <div style={styles.pageWrapper}>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+          * { box-sizing: border-box; }
+          body { margin: 0; background-color: #f7f4ed; }
+        `}</style>
+
+        <div style={styles.centerBox}>
+          <div style={{ fontSize: '40px', marginBottom: '10px' }}>🎉</div>
+          <h2 style={styles.title}>Kuis Selesai</h2>
+          <p style={{ color: '#666', fontSize: '14px', margin: '5px 0' }}>Nilai Kamu:</p>
+          <h1 style={{ fontSize: '56px', color: '#1a1a1a', margin: '15px 0', fontWeight: '800' }}>{skor}</h1>
+          <button onClick={handleLogout} style={styles.katBtn}>Keluar / Logout</button>
+        </div>
       </div>
     );
   }
 
   if (questions.length === 0) return (
-    <div style={styles.centerBox}>
-      <p>Belum ada soal untuk kategori ini.</p>
-      <button onClick={() => setKategori('')} style={styles.katBtn}>Kembali</button>
+    <div style={styles.pageWrapper}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; }
+        body { margin: 0; background-color: #f7f4ed; }
+      `}</style>
+
+      <div style={styles.centerBox}>
+        <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>Belum ada soal untuk kategori ini.</p>
+        <button onClick={() => setKategori('')} style={styles.katBtn}>Kembali</button>
+      </div>
     </div>
   );
 
   const q = questions[currentIndex];
 
   return (
-    <div style={styles.centerBox}>
-      <p style={{ fontSize: '12px', color: '#666' }}>Soal {currentIndex + 1} dari {questions.length}</p>
-      <h3 style={{ margin: '15px 0' }}>{q.soal}</h3>
+    <div style={styles.pageWrapper}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; }
+        body { margin: 0; background-color: #f7f4ed; }
+      `}</style>
 
-      <div>
-        {q.opsi.map((opsiText, idx) => (
-          <button
-            key={idx}
-            disabled={answered}
-            onClick={() => handleAnswer(idx)}
-            style={{
-              ...styles.optionBtn,
-              backgroundColor: answered ? '#e2e8f0' : '#edf2f7',
-              cursor: answered ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {opsiText}
-          </button>
-        ))}
+      <div style={styles.centerBox}>
+        <div style={styles.progressBar}>
+          <div style={{ ...styles.progressFill, width: `${((currentIndex + 1) / questions.length) * 100}%` }}></div>
+        </div>
+
+        <p style={{ fontSize: '12px', color: '#888', fontWeight: '600', marginBottom: '8px' }}>
+          SOAL {currentIndex + 1} DARI {questions.length}
+        </p>
+        <h3 style={styles.questionText}>{q.soal}</h3>
+
+        <div>
+          {q.opsi.map((opsiText, idx) => (
+            <button
+              key={idx}
+              disabled={answered}
+              onClick={() => handleAnswer(idx)}
+              style={{
+                ...styles.optionBtn,
+                backgroundColor: answered ? '#faf8f5' : '#ffffff',
+                borderColor: answered ? '#e2ddd0' : '#e2ddd0',
+                cursor: answered ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <span style={styles.optionBadge}>{String.fromCharCode(65 + idx)}</span>
+              {opsiText}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
 const styles = {
-  centerBox: { maxWidth: '400px', margin: '50px auto', padding: '20px', background: '#fff', border: '1px solid #ddd', borderRadius: '8px', textAlign: 'center', fontFamily: 'Arial, sans-serif' },
-  katBtn: { display: 'block', width: '100%', padding: '12px', margin: '10px 0', backgroundColor: '#2b6cb0', color: '#fff', border: 'none', borderRadius: '5px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' },
-  optionBtn: { display: 'block', width: '100%', padding: '10px', margin: '8px 0', border: '1px solid #cbd5e0', borderRadius: '4px', textAlign: 'left', fontSize: '14px' }
+  pageWrapper: {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    backgroundColor: '#f7f4ed',
+    padding: '20px',
+  },
+  centerBox: {
+    width: '100%',
+    maxWidth: '440px',
+    padding: '36px 28px',
+    background: '#ffffff',
+    border: '1px solid #eae5d9',
+    borderRadius: '24px',
+    textAlign: 'center',
+    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.04)',
+    position: 'relative',
+  },
+  title: {
+    fontSize: '22px',
+    fontWeight: '700',
+    color: '#1a1a1a',
+    margin: '0 0 8px 0',
+  },
+  questionText: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#2d2d2d',
+    margin: '15px 0 25px 0',
+    lineHeight: '1.4',
+  },
+  katBtn: {
+    display: 'block',
+    width: '100%',
+    padding: '14px',
+    margin: '12px 0',
+    backgroundColor: '#f6ca85',
+    color: '#1a1a1a',
+    border: 'none',
+    borderRadius: '12px',
+    fontSize: '15px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+    transition: 'all 0.2s',
+  },
+  optionBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%',
+    padding: '14px 16px',
+    margin: '10px 0',
+    border: '1.5px solid #e2ddd0',
+    borderRadius: '12px',
+    textAlign: 'left',
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#333333',
+    boxShadow: '0 2px 5px rgba(0,0,0,0.02)',
+  },
+  optionBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '28px',
+    height: '28px',
+    borderRadius: '8px',
+    backgroundColor: '#f7f4ed',
+    color: '#1a1a1a',
+    fontWeight: '700',
+    fontSize: '12px',
+    marginRight: '12px',
+    flexShrink: 0,
+  },
+  logoutBtnSmall: {
+    padding: '6px 14px',
+    fontSize: '12px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    backgroundColor: '#faf8f5',
+    border: '1px solid #e2ddd0',
+    borderRadius: '8px',
+    color: '#666',
+  },
+  progressBar: {
+    width: '100%',
+    height: '6px',
+    backgroundColor: '#f7f4ed',
+    borderRadius: '10px',
+    overflow: 'hidden',
+    marginBottom: '20px',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#f6ca85',
+    borderRadius: '10px',
+    transition: 'width 0.3s ease',
+  },
+  alertIcon: {
+    fontSize: '36px',
+    marginBottom: '10px',
+  },
 };
