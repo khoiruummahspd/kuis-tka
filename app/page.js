@@ -65,34 +65,47 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={styles.wrapper}>
+    <div style={styles.pageWrapper}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
-        body { margin: 0; background-color: #0f0f15; }
-        @media (max-width: 768px) {
-          .login-card { flex-direction: column-reverse !important; width: 95% !important; }
-          .side-banner { padding: 30px 20px !important; text-align: center; }
-        }
+        body { margin: 0; background-color: #f7f4ed; }
       `}</style>
 
-      <div className="login-card" style={styles.card}>
-        {/* SISI KIRI: FORM LOGIN */}
-        <div style={styles.formSection}>
-          <div style={styles.logoCircle}></div>
-          <h2 style={styles.title}>
-            {isMustChange ? 'Ganti Password' : 'Log in / Masuk Akun'}
+      {/* HEADER NAV */}
+      <header style={styles.header}>
+        <div style={styles.logo}>Kuis TKA</div>
+        <div style={styles.navRight}>
+          <span style={styles.helpText}>Bantuan Admin?</span>
+          <button style={styles.btnNav}>Portal Siswa</button>
+        </div>
+      </header>
+
+      {/* MAIN CONTAINER */}
+      <main style={styles.mainContainer}>
+        {/* ELEMENT DEKORASI LOKAL/CANVAS */}
+        <div style={styles.decoBoxLeft}></div>
+        <div style={styles.decoBoxRight}></div>
+
+        {/* FLOATING CARD */}
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>
+            {isMustChange ? 'Ubah Password' : 'Login Akun'}
           </h2>
+          <p style={styles.cardSubtitle}>
+            {isMustChange
+              ? 'Password kamu masih bawaan, silakan perbarui'
+              : 'Masukkan username & password untuk memulai kuis'}
+          </p>
 
           {error && <div style={styles.errorAlert}>{error}</div>}
 
           {!isMustChange ? (
             <form onSubmit={handleLogin}>
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Username</label>
+              <div style={styles.inputBox}>
                 <input
                   type="text"
-                  placeholder="Username siswa / admin"
+                  placeholder="Username / No. Induk"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -100,8 +113,7 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Password</label>
+              <div style={styles.inputBox}>
                 <input
                   type="password"
                   placeholder="Password"
@@ -112,145 +124,215 @@ export default function LoginPage() {
                 />
               </div>
 
-              <button type="submit" style={styles.btnGradient}>
-                Log in
+              <button type="submit" style={styles.btnOrange}>
+                Masuk Sekarang
               </button>
             </form>
           ) : (
             <form onSubmit={handleChangePassword}>
-              <p style={styles.infoText}>
-                Password kamu masih default. Masukkan password baru demi keamanan.
-              </p>
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Password Baru</label>
+              <div style={styles.inputBox}>
                 <input
                   type="password"
-                  placeholder="Password baru"
+                  placeholder="Password Baru"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   style={styles.input}
                 />
               </div>
-              <button type="submit" style={styles.btnGradient}>
-                Simpan Password Baru
+
+              <button type="submit" style={styles.btnOrange}>
+                Simpan Password
               </button>
             </form>
           )}
-        </div>
 
-        {/* SISI KANAN: BANNER GRADIENT */}
-        <div className="side-banner" style={styles.bannerSection}>
-          <h1 style={styles.bannerTitle}>Kuis TKA</h1>
-          <p style={styles.bannerText}>
-            Aplikasi kuis interaktif untuk siswa TK A. Mudah dikerjakan, cepat, dan terorganisir.
-          </p>
+          {/* SOCIAL / OPTION DUMMY BADGES */}
+          <div style={styles.dividerBox}>
+            <span style={styles.dividerLine}></span>
+            <span style={styles.dividerText}>Aplikasi Pembelajaran TK A</span>
+            <span style={styles.dividerLine}></span>
+          </div>
+
+          <div style={styles.roleBadges}>
+            <div style={styles.badge}>Siswa TK A</div>
+            <div style={styles.badge}>Guru / Admin</div>
+          </div>
         </div>
-      </div>
+      </main>
+
+      {/* FOOTER */}
+      <footer style={styles.footer}>
+        Copyright @KuisTKA 2026 | Privasi & Keamanan
+      </footer>
     </div>
   );
 }
 
 const styles = {
-  wrapper: {
+  pageWrapper: {
     minHeight: '100vh',
     display: 'flex',
+    flexDirection: 'column',
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    backgroundColor: '#f7f4ed',
+    color: '#2d2d2d',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    padding: '24px 48px',
+  },
+  logo: {
+    fontSize: '22px',
+    fontWeight: '800',
+    letterSpacing: '-0.5px',
+    color: '#1a1a1a',
+  },
+  navRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+  },
+  helpText: {
+    fontSize: '13px',
+    color: '#666',
+    fontWeight: '500',
+  },
+  btnNav: {
+    backgroundColor: '#f6ca85',
+    border: 'none',
+    padding: '8px 18px',
+    borderRadius: '8px',
+    fontWeight: '600',
+    fontSize: '13px',
+    color: '#1a1a1a',
+    cursor: 'pointer',
+  },
+  mainContainer: {
+    flex: 1,
+    display: 'flex',
     justifyContent: 'center',
-    fontFamily: "'Poppins', sans-serif",
+    alignItems: 'center',
+    position: 'relative',
     padding: '20px',
   },
+  decoBoxLeft: {
+    position: 'absolute',
+    left: '10%',
+    bottom: '15%',
+    width: '80px',
+    height: '140px',
+    backgroundColor: '#f4c467',
+    borderRadius: '12px',
+    opacity: 0.8,
+    zIndex: 1,
+  },
+  decoBoxRight: {
+    position: 'absolute',
+    right: '12%',
+    bottom: '12%',
+    width: '70px',
+    height: '100px',
+    backgroundColor: '#f6ca85',
+    borderRadius: '12px',
+    opacity: 0.8,
+    zIndex: 1,
+  },
   card: {
-    display: 'flex',
-    width: '850px',
-    maxWidth: '100%',
+    width: '100%',
+    maxWidth: '420px',
     backgroundColor: '#ffffff',
     borderRadius: '24px',
-    overflow: 'hidden',
-    boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+    padding: '40px 32px',
+    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.04)',
+    textAlign: 'center',
+    zIndex: 2,
+    border: '1px solid #eae5d9',
   },
-  formSection: {
-    flex: 1,
-    padding: '40px 35px',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
+  cardTitle: {
+    fontSize: '24px',
+    fontWeight: '700',
+    margin: '0 0 8px 0',
+    color: '#1a1a1a',
   },
-  logoCircle: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    border: '4px solid #8b5cf6',
-    marginBottom: '15px',
+  cardSubtitle: {
+    fontSize: '13px',
+    color: '#777777',
+    margin: '0 0 28px 0',
+    lineHeight: '1.4',
   },
-  title: {
-    fontSize: '20px',
-    fontWeight: '600',
-    color: '#4b5563',
-    marginBottom: '25px',
-  },
-  inputGroup: {
+  inputBox: {
     marginBottom: '16px',
-  },
-  label: {
-    display: 'block',
-    fontSize: '12px',
-    color: '#6b7280',
-    marginBottom: '6px',
-    fontWeight: '500',
   },
   input: {
     width: '100%',
-    padding: '12px 14px',
+    padding: '14px 16px',
+    borderRadius: '10px',
+    border: '1px solid #e2ddd0',
+    backgroundColor: '#faf8f5',
     fontSize: '13px',
-    borderRadius: '8px',
-    border: '1px solid #d1d5db',
     outline: 'none',
+    color: '#333',
   },
-  btnGradient: {
+  btnOrange: {
     width: '100%',
-    padding: '12px',
-    marginTop: '10px',
+    padding: '14px',
+    backgroundColor: '#f6ca85',
     border: 'none',
-    borderRadius: '20px',
-    background: 'linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%)',
-    color: '#ffffff',
+    borderRadius: '10px',
     fontSize: '14px',
-    fontWeight: '600',
+    fontWeight: '700',
+    color: '#1a1a1a',
     cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
+    marginTop: '10px',
+    boxShadow: '0 4px 12px rgba(246, 202, 133, 0.4)',
   },
   errorAlert: {
-    backgroundColor: '#fef2f2',
-    color: '#dc2626',
+    backgroundColor: '#fde8e8',
+    color: '#9b1c1c',
     padding: '10px',
-    borderRadius: '6px',
+    borderRadius: '8px',
     fontSize: '12px',
-    marginBottom: '15px',
+    marginBottom: '16px',
   },
-  infoText: {
-    fontSize: '12px',
-    color: '#6b7280',
-    marginBottom: '15px',
-  },
-  bannerSection: {
-    flex: 1,
-    background: 'linear-gradient(135deg, #a78bfa 0%, #ec4899 50%, #f43f5e 100%)',
-    padding: '50px 40px',
+  dividerBox: {
     display: 'flex',
-    flexDirection: 'column',
+    alignItems: 'center',
+    margin: '28px 0 20px 0',
+  },
+  dividerLine: {
+    flex: 1,
+    height: '1px',
+    backgroundColor: '#eee',
+  },
+  dividerText: {
+    fontSize: '11px',
+    color: '#aaa',
+    padding: '0 10px',
+  },
+  roleBadges: {
+    display: 'flex',
     justifyContent: 'center',
-    color: '#ffffff',
+    gap: '10px',
   },
-  bannerTitle: {
-    fontSize: '36px',
-    fontWeight: '700',
-    margin: '0 0 10px 0',
+  badge: {
+    flex: 1,
+    padding: '8px 12px',
+    borderRadius: '8px',
+    border: '1px solid #eee',
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#555',
+    backgroundColor: '#fafafa',
   },
-  bannerText: {
-    fontSize: '13px',
-    lineHeight: '1.6',
-    opacity: 0.9,
-    margin: 0,
+  footer: {
+    textAlign: 'center',
+    padding: '20px',
+    fontSize: '12px',
+    color: '#888888',
   },
 };
