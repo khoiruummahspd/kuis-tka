@@ -72,15 +72,6 @@ export default function LoginPage() {
         body { margin: 0; background-color: #f7f4ed; }
       `}</style>
 
-      {/* HEADER NAV */}
-      <header style={styles.header}>
-        <div style={styles.logo}>Kuis TKA</div>
-        <div style={styles.navRight}>
-          <span style={styles.helpText}>Bantuan Admin?</span>
-          <button style={styles.btnNav}>Portal Siswa</button>
-        </div>
-      </header>
-
       {/* MAIN CONTAINER */}
       <main style={styles.mainContainer}>
         {/* ELEMENT DEKORASI LOKAL/CANVAS */}
