@@ -54,7 +54,7 @@ export default function LoginPage() {
             Login Account
           </h2>
           <p style={styles.cardSubtitle}>
-            Selamat datang kembali! Masukkan kredensial Anda untuk mengakses platform kuis.
+            Selamat datang kembali! Masukkan kredensial Anda untuk mengakses platform.
           </p>
 
           {error && <div style={styles.errorAlert}>{error}</div>}
@@ -125,13 +125,6 @@ export default function LoginPage() {
       {/* FOOTER */}
       <footer style={styles.footer}>
         <span>© 2026 <strong>KuisTKA</strong>. All rights reserved.</span>
-        <div style={styles.footerLinks}>
-          <a href="#" style={styles.footerLink}>Privasi</a>
-          <span>•</span>
-          <a href="#" style={styles.footerLink}>Keamanan</a>
-          <span>•</span>
-          <a href="#" style={styles.footerLink}>Bantuan</a>
-        </div>
       </footer>
     </div>
   );
