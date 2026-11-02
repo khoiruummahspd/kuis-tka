@@ -350,8 +350,6 @@ export default function KuisPage() {
             {isDone && (
               <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
                 <h3 style={{ margin: '0 0 5px 0', color: '#5cb85c' }}>Selamat! Kuis Telah Selesai</h3>
-                <p style={{ color: '#666', fontSize: '13px', margin: '5px 0 0 0' }}>Nilai Akhir Kamu:</p>
-                <h1 style={{ fontSize: '48px', color: '#333', margin: '10px 0' }}>{skor}</h1>
                 <button
                   onClick={() => {
                     setActiveTab('dashboard');
