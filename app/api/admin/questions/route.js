@@ -2,7 +2,6 @@ import clientPromise from '@/lib/mongodb';
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 
-// GET: Ambil daftar soal
 export async function GET() {
   try {
     const client = await clientPromise;
@@ -14,18 +13,34 @@ export async function GET() {
   }
 }
 
-// POST: Tambah Soal Baru
 export async function POST(request) {
   try {
-    const { kategori, soal, opsi, jawabanBenar } = await request.json();
+    const body = await request.json();
     const client = await clientPromise;
     const db = client.db('kuis_tka');
 
+    if (Array.isArray(body)) {
+      if (!body.length) {
+        return NextResponse.json({ success: false, message: 'Data JSON kosong' }, { status: 400 });
+      }
+
+      const formattedQuestions = body.map((q) => ({
+        kategori: q.kategori,
+        soal: q.soal,
+        opsi: q.opsi,
+        jawabanBenar: parseInt(q.jawabanBenar),
+      }));
+
+      await db.collection('questions').insertMany(formattedQuestions);
+      return NextResponse.json({ success: true, message: `${formattedQuestions.length} soal berhasil diunggah` });
+    }
+
+    const { kategori, soal, opsi, jawabanBenar } = body;
     await db.collection('questions').insertOne({
       kategori,
       soal,
       opsi,
-      jawabanBenar: parseInt(jawabanBenar)
+      jawabanBenar: parseInt(jawabanBenar),
     });
 
     return NextResponse.json({ success: true, message: 'Soal berhasil disimpan' });
