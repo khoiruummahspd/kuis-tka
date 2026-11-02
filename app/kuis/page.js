@@ -8,13 +8,18 @@ export default function KuisPage() {
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' atau 'quiz'
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Stats State
+  // Stats & Dynamic Options State
   const [userResults, setUserResults] = useState([]);
-  
-  // Quiz Form & Flow State
+  const [allQuestions, setAllQuestions] = useState([]);
+  const [availableCategories, setAvailableCategories] = useState([]);
+  const [availablePackages, setAvailablePackages] = useState([]);
+
+  // Quiz Selection State
   const [kategori, setKategori] = useState('');
-  const [paket, setPaket] = useState(1);
+  const [paket, setPaket] = useState('');
   const [tingkatKesulitan, setTingkatKesulitan] = useState('sedang');
+  
+  // Quiz Flow State
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [skor, setSkor] = useState(0);
@@ -35,32 +40,52 @@ export default function KuisPage() {
         router.push('/admin');
       } else {
         setUser(parsedUser);
-        fetchUserStats(parsedUser.id);
+        fetchInitialData(parsedUser.id);
       }
     }
   }, []);
 
-  const fetchUserStats = async (userId) => {
+  const fetchInitialData = async (userId) => {
     try {
-      const res = await fetch('/api/admin/users');
-      const data = await res.json();
-      if (data.success) {
-        const myResults = (data.results || []).filter((r) => r.userId === userId);
+      // Fetch data hasil/riwayat
+      const resUsers = await fetch('/api/admin/users');
+      const dataUsers = await resUsers.json();
+      if (dataUsers.success) {
+        const myResults = (dataUsers.results || []).filter((r) => r.userId === userId);
         setUserResults(myResults);
+      }
+
+      // Fetch data bank soal untuk sinkronisasi Kategori & Paket
+      const resQ = await fetch('/api/admin/questions');
+      const dataQ = await resQ.json();
+      if (dataQ.success) {
+        const qList = dataQ.questions || [];
+        setAllQuestions(qList);
+
+        // Ambil kategori unik yang ada di database
+        const cats = [...new Set(qList.map((q) => q.kategori))].filter(Boolean);
+        setAvailableCategories(cats);
+        if (cats.length > 0) setKategori(cats[0]);
+
+        // Ambil paket unik yang ada di database
+        const pkgs = [...new Set(qList.map((q) => parseInt(q.paket) || 1))].sort((a, b) => a - b);
+        setAvailablePackages(pkgs);
+        if (pkgs.length > 0) setPaket(pkgs[0]);
       }
     } catch (err) {
       console.error(err);
     }
   };
 
-  const startKuis = async (selectedKat) => {
-    setKategori(selectedKat);
+  const startKuis = async () => {
+    if (!kategori || !paket) return alert('Pilih kategori dan paket soal terlebih dahulu!');
 
+    // Cek apakah user sudah pernah mengerjakan paket & kategori ini
     const resUser = await fetch('/api/admin/users');
     const dataUser = await resUser.json();
     if (dataUser.success) {
       const hasDone = (dataUser.results || []).some(
-        (r) => r.userId === user.id && r.kategori === selectedKat && (r.paket || 1) === paket
+        (r) => r.userId === user.id && r.kategori === kategori && (parseInt(r.paket) || 1) === parseInt(paket)
       );
       if (hasDone) {
         setAlreadyTaken(true);
@@ -68,17 +93,26 @@ export default function KuisPage() {
       }
     }
 
-    const res = await fetch('/api/admin/questions');
-    const data = await res.json();
-    if (data.success) {
-      const filtered = data.questions.filter(
-        (q) =>
-          q.kategori === selectedKat &&
-          (parseInt(q.paket) || 1) === parseInt(paket) &&
-          (q.tingkatKesulitan || 'sedang') === tingkatKesulitan
-      );
-      setQuestions(filtered);
+    // Filter soal dari data bank soal yang tersimpan
+    const filtered = allQuestions.filter(
+      (q) =>
+        q.kategori === kategori &&
+        (parseInt(q.paket) || 1) === parseInt(paket) &&
+        (q.tingkatKesulitan || 'sedang') === tingkatKesulitan
+    );
+
+    if (filtered.length === 0) {
+      alert(`Belum ada soal untuk kategori ${kategori.toUpperCase()} Paket ${paket} (${tingkatKesulitan.toUpperCase()})`);
+      return;
     }
+
+    setQuestions(filtered);
+    setCurrentIndex(0);
+    setSkor(0);
+    setAnswered(false);
+    setIsDone(false);
+    setAlreadyTaken(false);
+    setUserAnswers([]);
   };
 
   const handleAnswer = (selectedIdx) => {
@@ -118,19 +152,18 @@ export default function KuisPage() {
             userId: user.id,
             nama: user.nama || user.username,
             kategori,
-            paket,
+            paket: parseInt(paket),
             tingkatKesulitan,
             skor: currentSkor,
             detailJawaban: newAnswers
           }),
         });
-        fetchUserStats(user.id);
+        fetchInitialData(user.id);
       }
     }, 600);
   };
 
   const resetQuizState = () => {
-    setKategori('');
     setQuestions([]);
     setCurrentIndex(0);
     setSkor(0);
@@ -147,7 +180,7 @@ export default function KuisPage() {
 
   if (!user) return null;
 
-  // Hitung ringkasan statistik user
+  // Ringkasan Statistik User
   const totalKuis = userResults.length;
   const avgSkor = totalKuis > 0 ? Math.round(userResults.reduce((acc, curr) => acc + (curr.skor || 0), 0) / totalKuis) : 0;
   const maxSkor = totalKuis > 0 ? Math.max(...userResults.map((r) => r.skor || 0)) : 0;
@@ -199,7 +232,7 @@ export default function KuisPage() {
                     cursor: 'pointer'
                   }}
                 >
-                  📌 Dashboard & Sambutan
+                  Dashboard
                 </button>
                 <button
                   onClick={() => {
@@ -218,7 +251,7 @@ export default function KuisPage() {
                     cursor: 'pointer'
                   }}
                 >
-                  📝 Kerjakan Kuis
+                  Kerjakan Kuis
                 </button>
               </div>
             </div>
@@ -239,9 +272,9 @@ export default function KuisPage() {
         {activeTab === 'dashboard' && (
           <div>
             <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px' }}>
-              <h2 style={{ marginTop: 0, fontSize: '18px' }}>Selamat Datang, {user.nama || user.username}! 👋</h2>
+              <h2 style={{ marginTop: 0, fontSize: '18px' }}>Selamat Datang, {user.nama || user.username}!</h2>
               <p style={{ color: '#555', fontSize: '14px', margin: 0, lineHeight: '1.4' }}>
-                Siap untuk menguji kemampuanmu hari ini? Pilih menu <b>Kerjakan Kuis</b> melalui tombol navigasi di pojok kanan atas untuk mulai menjawab soal.
+                Silakan pilih menu <b>Kerjakan Kuis</b> pada navigasi di kanan atas untuk mulai mengerjakan kuis yang tersedia.
               </p>
             </div>
 
@@ -279,7 +312,9 @@ export default function KuisPage() {
                     <tbody>
                       {userResults.map((r, idx) => (
                         <tr key={idx} style={{ fontSize: '13px' }}>
-                          <td style={{ padding: '8px', border: '1px solid #ddd' }}>{r.kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}</td>
+                          <td style={{ padding: '8px', border: '1px solid #ddd' }}>
+                            {r.kategori === 'matematika' ? 'Matematika' : r.kategori === 'bahasa_indonesia' ? 'Bahasa Indonesia' : r.kategori}
+                          </td>
                           <td style={{ padding: '8px', border: '1px solid #ddd' }}>Paket {r.paket || 1}</td>
                           <td style={{ padding: '8px', border: '1px solid #ddd' }}><b>{r.skor}</b></td>
                         </tr>
@@ -295,57 +330,78 @@ export default function KuisPage() {
         {/* TAB 2: HALAMAN KUIS */}
         {activeTab === 'quiz' && (
           <div>
-            {/* SUB-STATE: PERNAH MENGERJAKAN */}
+            {/* STATE 1: PERNAH MENGERJAKAN */}
             {alreadyTaken && (
               <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>⚠️</div>
-                <h3 style={{ color: '#d9534f', margin: '0 0 10px 0', fontSize: '16px' }}>Sudah Dikerjakan</h3>
+                <h3 style={{ color: '#d9534f', margin: '0 0 10px 0', fontSize: '16px' }}>Kuis Sudah Dikerjakan</h3>
                 <p style={{ fontSize: '13px', color: '#555', marginBottom: '15px' }}>
-                  Kamu sudah pernah mengerjakan Paket {paket} ({kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}).
+                  Kamu sudah pernah mengerjakan kuis kategori <b>{kategori}</b> Paket <b>{paket}</b>.
                 </p>
                 <button
                   onClick={() => setAlreadyTaken(false)}
                   style={{ padding: '8px 16px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}
                 >
-                  Pilih Paket / Kategori Lain
+                  Pilih Paket Lain
                 </button>
               </div>
             )}
 
-            {/* SUB-STATE: SELESAI */}
+            {/* STATE 2: SELESAI KERJAKAN KUIS */}
             {isDone && (
               <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-                <div style={{ fontSize: '40px', marginBottom: '8px' }}>🎉</div>
-                <h3 style={{ margin: '0 0 5px 0' }}>Kuis Selesai!</h3>
-                <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>Nilai Akhir Kamu:</p>
+                <h3 style={{ margin: '0 0 5px 0', color: '#5cb85c' }}>Selamat! Kuis Telah Selesai</h3>
+                <p style={{ color: '#666', fontSize: '13px', margin: '5px 0 0 0' }}>Nilai Akhir Kamu:</p>
                 <h1 style={{ fontSize: '48px', color: '#333', margin: '10px 0' }}>{skor}</h1>
                 <button
                   onClick={() => {
                     setActiveTab('dashboard');
                     resetQuizState();
                   }}
-                  style={{ padding: '10px 20px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                  style={{ padding: '10px 20px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
                 >
                   Kembali ke Dashboard
                 </button>
               </div>
             )}
 
-            {/* SUB-STATE: FORM PILIH SOAL */}
-            {!alreadyTaken && !isDone && !kategori && (
+            {/* STATE 3: FORM PILIH SOAL (DATABASE SINKRON) */}
+            {!alreadyTaken && !isDone && questions.length === 0 && (
               <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd' }}>
                 <h3 style={{ marginTop: 0, fontSize: '16px' }}>Pilih Parameter Kuis</h3>
                 
                 <div style={{ marginBottom: '12px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Paket Soal:</label>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Kategori Soal:</label>
+                  <select
+                    value={kategori}
+                    onChange={(e) => setKategori(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+                  >
+                    {availableCategories.length === 0 ? (
+                      <option value="">Tidak ada kategori tersedia</option>
+                    ) : (
+                      availableCategories.map((cat, idx) => (
+                        <option key={idx} value={cat}>
+                          {cat === 'matematika' ? 'Matematika' : cat === 'bahasa_indonesia' ? 'Bahasa Indonesia' : cat}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Paket Soal (Tersedia):</label>
                   <select
                     value={paket}
                     onChange={(e) => setPaket(parseInt(e.target.value))}
                     style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
                   >
-                    <option value={1}>Paket 1</option>
-                    <option value={2}>Paket 2</option>
-                    <option value={3}>Paket 3</option>
+                    {availablePackages.length === 0 ? (
+                      <option value="">Tidak ada paket tersedia</option>
+                    ) : (
+                      availablePackages.map((p, idx) => (
+                        <option key={idx} value={p}>Paket {p}</option>
+                      ))
+                    )}
                   </select>
                 </div>
 
@@ -363,37 +419,17 @@ export default function KuisPage() {
                 </div>
 
                 <button
-                  onClick={() => startKuis('matematika')}
-                  style={{ width: '100%', padding: '10px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginBottom: '8px' }}
+                  onClick={startKuis}
+                  disabled={availableCategories.length === 0}
+                  style={{ width: '100%', padding: '10px', background: availableCategories.length > 0 ? '#5cb85c' : '#ccc', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
-                  📐 Matematika
-                </button>
-                <button
-                  onClick={() => startKuis('bahasa_indonesia')}
-                  style={{ width: '100%', padding: '10px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-                >
-                  📖 Bahasa Indonesia
+                  Mulai Kuis
                 </button>
               </div>
             )}
 
-            {/* SUB-STATE: SOAL KOSONG */}
-            {!alreadyTaken && !isDone && kategori && questions.length === 0 && (
-              <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-                <p style={{ color: '#666', fontSize: '13px', marginBottom: '15px' }}>
-                  Belum ada soal untuk Paket {paket} ({tingkatKesulitan.toUpperCase()}).
-                </p>
-                <button
-                  onClick={() => setKategori('')}
-                  style={{ padding: '8px 16px', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}
-                >
-                  Kembali Pilih Paket
-                </button>
-              </div>
-            )}
-
-            {/* SUB-STATE: PENGERJAAN SOAL */}
-            {!alreadyTaken && !isDone && kategori && questions.length > 0 && (
+            {/* STATE 4: PENGERJAAN SOAL */}
+            {!alreadyTaken && !isDone && questions.length > 0 && (
               <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd' }}>
                 {/* Progress Bar */}
                 <div style={{ width: '100%', height: '8px', background: '#eee', borderRadius: '4px', overflow: 'hidden', marginBottom: '12px' }}>
