@@ -12,19 +12,11 @@ export default function AdminDashboard() {
   const [results, setResults] = useState([]);
   const [questions, setQuestions] = useState([]);
 
-  // Form States
+  // Form & Edit States
   const [studentForm, setStudentForm] = useState({ nama: '', username: '', password: '123' });
   const [editUser, setEditUser] = useState(null);
+  const [editQuestion, setEditQuestion] = useState(null);
   const [selectedDetail, setSelectedDetail] = useState(null);
-
-  const [questionForm, setQuestionForm] = useState({
-    paket: 1,
-    tingkatKesulitan: 'sedang',
-    kategori: 'matematika',
-    soal: '',
-    opsi: ['', '', '', ''],
-    jawabanBenar: 0,
-  });
 
   const router = useRouter();
 
@@ -112,20 +104,6 @@ export default function AdminDashboard() {
     fetchDashboardData();
   };
 
-  const handleAddQuestion = async (e) => {
-    e.preventDefault();
-    const res = await fetch('/api/admin/questions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(questionForm),
-    });
-
-    if (!res.ok) return alert('Gagal menambah soal');
-
-    setQuestionForm({ paket: 1, tingkatKesulitan: 'sedang', kategori: 'matematika', soal: '', opsi: ['', '', '', ''], jawabanBenar: 0 });
-    fetchDashboardData();
-  };
-
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -154,49 +132,44 @@ export default function AdminDashboard() {
     reader.readAsText(file);
   };
 
-  // State untuk Modal Edit Soal
-const [editQuestion, setEditQuestion] = useState(null);
-
-// Handler Hapus Soal
-const handleDeleteQuestion = async (questionId) => {
-  if (!confirm('Apakah kamu yakin ingin menghapus soal ini?')) return;
-  try {
-    const res = await fetch('/api/admin/questions', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ questionId }),
-    });
-    if (res.ok) {
-      fetchDashboardData();
-    } else {
-      alert('Gagal menghapus soal');
+  const handleDeleteQuestion = async (questionId) => {
+    if (!confirm('Apakah kamu yakin ingin menghapus soal ini?')) return;
+    try {
+      const res = await fetch('/api/admin/questions', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questionId }),
+      });
+      if (res.ok) {
+        fetchDashboardData();
+      } else {
+        alert('Gagal menghapus soal');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Terjadi kesalahan saat menghapus');
     }
-  } catch (err) {
-    console.error(err);
-    alert('Terjadi kesalahan saat menghapus');
-  }
-};
+  };
 
-// Handler Simpan Edit Soal
-const handleSaveEditQuestion = async (e) => {
-  e.preventDefault();
-  try {
-    const res = await fetch('/api/admin/questions', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editQuestion),
-    });
-    if (res.ok) {
-      setEditQuestion(null);
-      fetchDashboardData();
-    } else {
-      alert('Gagal memperbarui soal');
+  const handleSaveEditQuestion = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/admin/questions', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editQuestion),
+      });
+      if (res.ok) {
+        setEditQuestion(null);
+        fetchDashboardData();
+      } else {
+        alert('Gagal memperbarui soal');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Terjadi kesalahan saat menyimpan');
     }
-  } catch (err) {
-    console.error(err);
-    alert('Terjadi kesalahan saat menyimpan');
-  }
-};
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -302,7 +275,6 @@ const handleSaveEditQuestion = async (e) => {
         {activeTab === 'activity' && (
           <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', overflow: 'hidden' }}>
             <h3 style={{ marginTop: 0, fontSize: '16px' }}>Aktivitas Pengerjaan Terbaru</h3>
-            {/* PembungkusScroll Otomatis agar tidak meleber */}
             <div style={{ overflowX: 'auto', width: '100%' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
                 <thead>
@@ -407,163 +379,163 @@ const handleSaveEditQuestion = async (e) => {
           </div>
         )}
 
-{/* BANK SOAL */}
-{activeTab === 'questions' && (
-  <div>
-    {/* HEADER & IMPORT JSON */}
-    <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <h3 style={{ margin: 0, fontSize: '16px' }}>Kelola Bank Soal</h3>
-      <label style={{ padding: '8px 14px', background: '#333', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
-        Import JSON
-        <input type="file" accept=".json" onChange={handleFileUpload} style={{ display: 'none' }} />
-      </label>
-    </div>
+        {/* BANK SOAL */}
+        {activeTab === 'questions' && (
+          <div>
+            {/* HEADER & IMPORT JSON */}
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: '16px' }}>Kelola Bank Soal</h3>
+              <label style={{ padding: '8px 14px', background: '#333', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
+                Import JSON
+                <input type="file" accept=".json" onChange={handleFileUpload} style={{ display: 'none' }} />
+              </label>
+            </div>
 
-    {/* DAFTAR SOAL */}
-    <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd' }}>
-      <h3 style={{ marginTop: 0, fontSize: '16px', marginBottom: '15px' }}>Daftar Soal ({questions.length})</h3>
-      {questions.length === 0 ? (
-        <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>Belum ada soal. Silakan import file JSON.</p>
-      ) : (
-        questions.map((q, idx) => (
-          <div key={q._id || idx} style={{ borderBottom: '1px solid #eee', paddingBottom: '12px', marginBottom: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-              <div style={{ fontSize: '11px', color: '#666' }}>
-                <b>[{q.kategori?.toUpperCase()}]</b> Paket {q.paket || 1} • {q.tingkatKesulitan || 'sedang'}
+            {/* DAFTAR SOAL */}
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd' }}>
+              <h3 style={{ marginTop: 0, fontSize: '16px', marginBottom: '15px' }}>Daftar Soal ({questions.length})</h3>
+              {questions.length === 0 ? (
+                <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>Belum ada soal. Silakan import file JSON.</p>
+              ) : (
+                questions.map((q, idx) => (
+                  <div key={q._id || idx} style={{ borderBottom: '1px solid #eee', paddingBottom: '12px', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                      <div style={{ fontSize: '11px', color: '#666' }}>
+                        <b>[{q.kategori?.toUpperCase()}]</b> Paket {q.paket || 1} • {q.tingkatKesulitan || 'sedang'}
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button
+                          onClick={() => setEditQuestion({ ...q })}
+                          style={{ padding: '4px 8px', background: '#f0ad4e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteQuestion(q._id)}
+                          style={{ padding: '4px 8px', background: '#d9534f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px' }}>
+                      {idx + 1}. {q.soal}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px' }}>
+                      {q.opsi?.map((op, i) => (
+                        <span key={i} style={{ color: i === q.jawabanBenar ? 'green' : '#333', fontWeight: i === q.jawabanBenar ? 'bold' : 'normal' }}>
+                          {String.fromCharCode(65 + i)}. {op} {i === q.jawabanBenar && '(Kunci)'}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* MODAL EDIT SOAL */}
+            {editQuestion && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', zIndex: 100 }}>
+                <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', width: '100%', maxWidth: '420px', maxHeight: '90vh', overflowY: 'auto' }}>
+                  <h3 style={{ marginTop: 0, fontSize: '16px' }}>Edit Soal</h3>
+                  <form onSubmit={handleSaveEditQuestion}>
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Paket:</label>
+                        <input
+                          type="number"
+                          value={editQuestion.paket || 1}
+                          onChange={(e) => setEditQuestion({ ...editQuestion, paket: parseInt(e.target.value) || 1 })}
+                          required
+                          style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Kesulitan:</label>
+                        <select
+                          value={editQuestion.tingkatKesulitan || 'sedang'}
+                          onChange={(e) => setEditQuestion({ ...editQuestion, tingkatKesulitan: e.target.value })}
+                          style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                        >
+                          <option value="mudah">Mudah</option>
+                          <option value="sedang">Sedang</option>
+                          <option value="sulit">Sulit</option>
+                        </select>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Kategori:</label>
+                        <select
+                          value={editQuestion.kategori || 'matematika'}
+                          onChange={(e) => setEditQuestion({ ...editQuestion, kategori: e.target.value })}
+                          style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                        >
+                          <option value="matematika">Matematika</option>
+                          <option value="bahasa_indonesia">Bahasa Indonesia</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: '10px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Pertanyaan:</label>
+                      <input
+                        type="text"
+                        value={editQuestion.soal || ''}
+                        onChange={(e) => setEditQuestion({ ...editQuestion, soal: e.target.value })}
+                        required
+                        style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: '10px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Pilihan Jawaban:</label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {editQuestion.opsi?.map((op, idx) => (
+                          <input
+                            key={idx}
+                            type="text"
+                            value={op}
+                            onChange={(e) => {
+                              const nextOpsi = [...editQuestion.opsi];
+                              nextOpsi[idx] = e.target.value;
+                              setEditQuestion({ ...editQuestion, opsi: nextOpsi });
+                            }}
+                            required
+                            style={{ padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Kunci Jawaban Benar:</label>
+                      <select
+                        value={editQuestion.jawabanBenar}
+                        onChange={(e) => setEditQuestion({ ...editQuestion, jawabanBenar: parseInt(e.target.value) })}
+                        style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                      >
+                        <option value={0}>Pilihan A</option>
+                        <option value={1}>Pilihan B</option>
+                        <option value={2}>Pilihan C</option>
+                        <option value={3}>Pilihan D</option>
+                      </select>
+                    </div>
+
+                    <div style={{ textAlign: 'right' }}>
+                      <button type="button" onClick={() => setEditQuestion(null)} style={{ padding: '6px 12px', marginRight: '6px', background: '#ccc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
+                        Batal
+                      </button>
+                      <button type="submit" style={{ padding: '6px 12px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
+                        Simpan
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <button
-                  onClick={() => setEditQuestion({ ...q })}
-                  style={{ padding: '4px 8px', background: '#f0ad4e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDeleteQuestion(q._id)}
-                  style={{ padding: '4px 8px', background: '#d9534f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                >
-                  Hapus
-                </button>
-              </div>
-            </div>
-
-            <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px' }}>
-              {idx + 1}. {q.soal}
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px' }}>
-              {q.opsi?.map((op, i) => (
-                <span key={i} style={{ color: i === q.jawabanBenar ? 'green' : '#333', fontWeight: i === q.jawabanBenar ? 'bold' : 'normal' }}>
-                  {String.fromCharCode(65 + i)}. {op} {i === q.jawabanBenar && '(Kunci)'}
-                </span>
-              ))}
-            </div>
+            )}
           </div>
-        ))
-      )}
-    </div>
-
-    {/* MODAL EDIT SOAL */}
-    {editQuestion && (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', zIndex: 100 }}>
-        <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', width: '100%', maxWidth: '420px', maxHeight: '90vh', overflowY: 'auto' }}>
-          <h3 style={{ marginTop: 0, fontSize: '16px' }}>Edit Soal</h3>
-          <form onSubmit={handleSaveEditQuestion}>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Paket:</label>
-                <input
-                  type="number"
-                  value={editQuestion.paket || 1}
-                  onChange={(e) => setEditQuestion({ ...editQuestion, paket: parseInt(e.target.value) || 1 })}
-                  required
-                  style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Kesulitan:</label>
-                <select
-                  value={editQuestion.tingkatKesulitan || 'sedang'}
-                  onChange={(e) => setEditQuestion({ ...editQuestion, tingkatKesulitan: e.target.value })}
-                  style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
-                >
-                  <option value="mudah">Mudah</option>
-                  <option value="sedang">Sedang</option>
-                  <option value="sulit">Sulit</option>
-                </select>
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Kategori:</label>
-                <select
-                  value={editQuestion.kategori || 'matematika'}
-                  onChange={(e) => setEditQuestion({ ...editQuestion, kategori: e.target.value })}
-                  style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
-                >
-                  <option value="matematika">Matematika</option>
-                  <option value="bahasa_indonesia">Bahasa Indonesia</option>
-                </select>
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Pertanyaan:</label>
-              <input
-                type="text"
-                value={editQuestion.soal || ''}
-                onChange={(e) => setEditQuestion({ ...editQuestion, soal: e.target.value })}
-                required
-                style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Pilihan Jawaban:</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {editQuestion.opsi?.map((op, idx) => (
-                  <input
-                    key={idx}
-                    type="text"
-                    value={op}
-                    onChange={(e) => {
-                      const nextOpsi = [...editQuestion.opsi];
-                      nextOpsi[idx] = e.target.value;
-                      setEditQuestion({ ...editQuestion, opsi: nextOpsi });
-                    }}
-                    required
-                    style={{ padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Kunci Jawaban Benar:</label>
-              <select
-                value={editQuestion.jawabanBenar}
-                onChange={(e) => setEditQuestion({ ...editQuestion, jawabanBenar: parseInt(e.target.value) })}
-                style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
-              >
-                <option value={0}>Pilihan A</option>
-                <option value={1}>Pilihan B</option>
-                <option value={2}>Pilihan C</option>
-                <option value={3}>Pilihan D</option>
-              </select>
-            </div>
-
-            <div style={{ textAlign: 'right' }}>
-              <button type="button" onClick={() => setEditQuestion(null)} style={{ padding: '6px 12px', marginRight: '6px', background: '#ccc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
-                Batal
-              </button>
-              <button type="submit" style={{ padding: '6px 12px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
-                Simpan
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    )}
-  </div>
-)}
+        )}
 
         {/* HASIL & STATISTIK */}
         {activeTab === 'stats' && (
