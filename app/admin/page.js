@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function AdminDashboard() {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [users, setUsers] = useState([]);
   const [results, setResults] = useState([]);
@@ -160,94 +161,130 @@ export default function AdminDashboard() {
 
   if (!user) return null;
 
+  const menuItems = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'activity', label: 'Aktivitas Terbaru' },
+    { id: 'students', label: 'Data Siswa' },
+    { id: 'questions', label: 'Bank Soal' },
+    { id: 'stats', label: 'Hasil & Statistik' },
+    { id: 'account', label: 'Pengaturan Akun' },
+  ];
+
   return (
     <div style={{ fontFamily: 'sans-serif', backgroundColor: '#f4f4f9', minHeight: '100vh', padding: '20px' }}>
       
-      {/* NAVIGATION BAR */}
+      {/* HEADER BAR & TOMBOL GARIS TIGA (KANAN ATAS) */}
       <div style={{ background: '#fff', padding: '15px 20px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <strong style={{ fontSize: '18px', marginRight: '10px' }}>Admin Dashboard</strong>
           <small style={{ color: '#666' }}>({user.nama || user.username})</small>
         </div>
-        <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#d9534f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-          Logout
+        
+        {/* Tombol Garis Tiga */}
+        <button
+          onClick={() => setIsMenuOpen(true)}
+          style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '0 8px' }}
+        >
+          ☰
         </button>
       </div>
 
-      {/* TABS */}
-      <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        {[
-          { id: 'overview', label: 'Overview' },
-          { id: 'students', label: 'Data Siswa' },
-          { id: 'questions', label: 'Bank Soal' },
-          { id: 'stats', label: 'Hasil & Statistik' },
-          { id: 'account', label: 'Pengaturan Akun' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              padding: '10px 18px',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              background: activeTab === tab.id ? '#0275d8' : '#fff',
-              color: activeTab === tab.id ? '#fff' : '#333',
-              fontWeight: activeTab === tab.id ? 'bold' : 'normal',
-              cursor: 'pointer'
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {/* OVERLAY & PANEL SIDEBAR MENU (MUNCUL DI KIRI) */}
+      {isMenuOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 99 }}>
+          <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: '250px', background: '#fff', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '2px 0 8px rgba(0,0,0,0.1)' }}>
+            
+            {/* Draf Menu Atas */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0, fontSize: '16px' }}>Menu Admin</h3>
+                <button onClick={() => setIsMenuOpen(false)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer' }}>✕</button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {menuItems.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setIsMenuOpen(false);
+                    }}
+                    style={{
+                      padding: '10px 14px',
+                      textAlign: 'left',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      background: activeTab === tab.id ? '#0275d8' : '#fff',
+                      color: activeTab === tab.id ? '#fff' : '#333',
+                      fontWeight: activeTab === tab.id ? 'bold' : 'normal',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tombol Logout (Di Paling Bawah Menu) */}
+            <button
+              onClick={handleLogout}
+              style={{ padding: '10px', background: '#d9534f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* MAIN CONTENT AREA */}
       <div>
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
-          <div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '20px' }}>
-              <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-                <span style={{ display: 'block', color: '#666', fontSize: '14px' }}>Total Siswa</span>
-                <strong style={{ fontSize: '28px' }}>{users.length}</strong>
-              </div>
-              <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-                <span style={{ display: 'block', color: '#666', fontSize: '14px' }}>Total Soal</span>
-                <strong style={{ fontSize: '28px' }}>{questions.length}</strong>
-              </div>
-              <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-                <span style={{ display: 'block', color: '#666', fontSize: '14px' }}>Kuis Selesai</span>
-                <strong style={{ fontSize: '28px' }}>{results.length}</strong>
-              </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
+              <span style={{ display: 'block', color: '#666', fontSize: '14px' }}>Total Siswa</span>
+              <strong style={{ fontSize: '28px' }}>{users.length}</strong>
             </div>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
+              <span style={{ display: 'block', color: '#666', fontSize: '14px' }}>Total Soal</span>
+              <strong style={{ fontSize: '28px' }}>{questions.length}</strong>
+            </div>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
+              <span style={{ display: 'block', color: '#666', fontSize: '14px' }}>Kuis Selesai</span>
+              <strong style={{ fontSize: '28px' }}>{results.length}</strong>
+            </div>
+          </div>
+        )}
 
-            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd' }}>
-              <h3 style={{ marginTop: 0 }}>Aktivitas Pengerjaan Terbaru</h3>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#eee', textAlign: 'left' }}>
-                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Nama Siswa</th>
-                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Username</th>
-                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Matematika</th>
-                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Bahasa Indonesia</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u) => {
-                    const mtk = results.find((r) => r.userId === u._id && r.kategori === 'matematika');
-                    const indo = results.find((r) => r.userId === u._id && r.kategori === 'bahasa_indonesia');
-                    return (
-                      <tr key={u._id}>
-                        <td style={{ padding: '10px', border: '1px solid #ddd' }}>{u.nama || u.username}</td>
-                        <td style={{ padding: '10px', border: '1px solid #ddd' }}>{u.username}</td>
-                        <td style={{ padding: '10px', border: '1px solid #ddd' }}>{mtk ? mtk.skor : '-'}</td>
-                        <td style={{ padding: '10px', border: '1px solid #ddd' }}>{indo ? indo.skor : '-'}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+        {/* AKTIVITAS PENGERJAAN TERBARU (TAB TERPISAH) */}
+        {activeTab === 'activity' && (
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd' }}>
+            <h3 style={{ marginTop: 0 }}>Aktivitas Pengerjaan Terbaru</h3>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#eee', textAlign: 'left' }}>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Nama Siswa</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Username</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Matematika</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Bahasa Indonesia</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => {
+                  const mtk = results.find((r) => r.userId === u._id && r.kategori === 'matematika');
+                  const indo = results.find((r) => r.userId === u._id && r.kategori === 'bahasa_indonesia');
+                  return (
+                    <tr key={u._id}>
+                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{u.nama || u.username}</td>
+                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{u.username}</td>
+                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{mtk ? mtk.skor : '-'}</td>
+                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{indo ? indo.skor : '-'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
 
