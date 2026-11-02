@@ -161,138 +161,75 @@ export default function AdminDashboard() {
   if (!user) return null;
 
   return (
-    <div style={styles.pageWrapper}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        * { box-sizing: border-box; }
-        body { margin: 0; background-color: #f7f4ed; }
-
-        #header-outer.scrolled {
-          background-color: #1e293b;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-        }
-
-        .sidebar-nav-link {
-          color: #94a3b8;
-          transition: background-color 0.2s, color 0.2s;
-          cursor: pointer;
-        }
-
-        .sidebar-nav-link:hover {
-          background-color: rgba(255, 255, 255, 0.05);
-          color: #ffffff;
-        }
-
-        .sidebar-nav-link.active {
-          background-color: rgba(255, 255, 255, 0.07);
-          color: #ffffff;
-          font-weight: 600;
-          position: relative;
-        }
-
-        .sidebar-nav-link.active::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 50%;
-          transform: translateY(-50%);
-          height: 60%;
-          width: 4px;
-          background-color: #f6ca85;
-          border-radius: 0 4px 4px 0;
-        }
-
-        .header-link {
-          color: #334155;
-          cursor: pointer;
-        }
-
-        .header-link:hover, .header-link.active {
-          color: #d97706;
-          font-weight: 700;
-        }
-      `}</style>
-
-      {/* HEADER NAV */}
-      <header id="header-outer" style={styles.header}>
-        <div style={styles.headerInner}>
-          <div style={styles.brand}>
-            <span style={{ color: '#2563eb', fontWeight: '800' }}>ZEY</span>
-            <span style={{ color: '#d97706', fontWeight: '800' }}>VERSE</span>
-            <span style={styles.roleBadge}>ADMIN</span>
-          </div>
-
-          <nav style={styles.desktopNav}>
-            <span
-              onClick={() => setActiveTab('overview')}
-              className={`header-link ${activeTab === 'overview' ? 'active' : ''}`}
-            >
-              OVERVIEW
-            </span>
-            <span
-              onClick={() => setActiveTab('students')}
-              className={`header-link ${activeTab === 'students' ? 'active' : ''}`}
-            >
-              DATA SISWA
-            </span>
-            <span
-              onClick={() => setActiveTab('questions')}
-              className={`header-link ${activeTab === 'questions' ? 'active' : ''}`}
-            >
-              BANK SOAL
-            </span>
-            <span
-              onClick={() => setActiveTab('stats')}
-              className={`header-link ${activeTab === 'stats' ? 'active' : ''}`}
-            >
-              HASIL & STATISTIK
-            </span>
-            <span
-              onClick={() => setActiveTab('account')}
-              className={`header-link ${activeTab === 'account' ? 'active' : ''}`}
-            >
-              PENGATURAN AKUN
-            </span>
-          </nav>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '13px', fontWeight: '600' }}>{user.nama || user.username}</span>
-            <button onClick={handleLogout} style={styles.btnLogout}>
-              LOGOUT
-            </button>
-          </div>
+    <div style={{ fontFamily: 'sans-serif', backgroundColor: '#f4f4f9', minHeight: '100vh', padding: '20px' }}>
+      
+      {/* NAVIGATION BAR */}
+      <div style={{ background: '#fff', padding: '15px 20px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <strong style={{ fontSize: '18px', marginRight: '10px' }}>Admin Dashboard</strong>
+          <small style={{ color: '#666' }}>({user.nama || user.username})</small>
         </div>
-      </header>
+        <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#d9534f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+          Logout
+        </button>
+      </div>
+
+      {/* TABS */}
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        {[
+          { id: 'overview', label: 'Overview' },
+          { id: 'students', label: 'Data Siswa' },
+          { id: 'questions', label: 'Bank Soal' },
+          { id: 'stats', label: 'Hasil & Statistik' },
+          { id: 'account', label: 'Pengaturan Akun' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              padding: '10px 18px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              background: activeTab === tab.id ? '#0275d8' : '#fff',
+              color: activeTab === tab.id ? '#fff' : '#333',
+              fontWeight: activeTab === tab.id ? 'bold' : 'normal',
+              cursor: 'pointer'
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
       {/* MAIN CONTENT AREA */}
-      <main style={styles.mainContainer}>
+      <div>
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
           <div>
-            <div style={styles.statsGrid}>
-              <div style={styles.statCard}>
-                <span style={styles.statLabel}>TOTAL SISWA</span>
-                <span style={styles.statValue}>{users.length}</span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '20px' }}>
+              <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
+                <span style={{ display: 'block', color: '#666', fontSize: '14px' }}>Total Siswa</span>
+                <strong style={{ fontSize: '28px' }}>{users.length}</strong>
               </div>
-              <div style={styles.statCard}>
-                <span style={styles.statLabel}>TOTAL SOAL</span>
-                <span style={styles.statValue}>{questions.length}</span>
+              <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
+                <span style={{ display: 'block', color: '#666', fontSize: '14px' }}>Total Soal</span>
+                <strong style={{ fontSize: '28px' }}>{questions.length}</strong>
               </div>
-              <div style={styles.statCard}>
-                <span style={styles.statLabel}>KUIS SELESAI</span>
-                <span style={styles.statValue}>{results.length}</span>
+              <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
+                <span style={{ display: 'block', color: '#666', fontSize: '14px' }}>Kuis Selesai</span>
+                <strong style={{ fontSize: '28px' }}>{results.length}</strong>
               </div>
             </div>
 
-            <div style={styles.card}>
-              <h3 style={styles.cardTitle}>Aktivitas Pengerjaan Terbaru</h3>
-              <table style={styles.table}>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd' }}>
+              <h3 style={{ marginTop: 0 }}>Aktivitas Pengerjaan Terbaru</h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr>
-                    <th style={styles.th}>Nama Siswa</th>
-                    <th style={styles.th}>Username</th>
-                    <th style={styles.th}>Matematika</th>
-                    <th style={styles.th}>Bahasa Indonesia</th>
+                  <tr style={{ background: '#eee', textAlign: 'left' }}>
+                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Nama Siswa</th>
+                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Username</th>
+                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Matematika</th>
+                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Bahasa Indonesia</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -300,11 +237,11 @@ export default function AdminDashboard() {
                     const mtk = results.find((r) => r.userId === u._id && r.kategori === 'matematika');
                     const indo = results.find((r) => r.userId === u._id && r.kategori === 'bahasa_indonesia');
                     return (
-                      <tr key={u._id} style={styles.tr}>
-                        <td style={styles.td}><strong>{u.nama || u.username}</strong></td>
-                        <td style={styles.td}>{u.username}</td>
-                        <td style={styles.td}>{mtk ? mtk.skor : '-'}</td>
-                        <td style={styles.td}>{indo ? indo.skor : '-'}</td>
+                      <tr key={u._id}>
+                        <td style={{ padding: '10px', border: '1px solid #ddd' }}>{u.nama || u.username}</td>
+                        <td style={{ padding: '10px', border: '1px solid #ddd' }}>{u.username}</td>
+                        <td style={{ padding: '10px', border: '1px solid #ddd' }}>{mtk ? mtk.skor : '-'}</td>
+                        <td style={{ padding: '10px', border: '1px solid #ddd' }}>{indo ? indo.skor : '-'}</td>
                       </tr>
                     );
                   })}
@@ -317,16 +254,16 @@ export default function AdminDashboard() {
         {/* DATA SISWA */}
         {activeTab === 'students' && (
           <div>
-            <div style={{ ...styles.card, marginBottom: '20px' }}>
-              <h3 style={styles.cardTitle}>Tambah Akun Siswa Baru</h3>
-              <form onSubmit={handleAddStudent} style={styles.formGrid}>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '20px' }}>
+              <h3 style={{ marginTop: 0 }}>Tambah Akun Siswa Baru</h3>
+              <form onSubmit={handleAddStudent} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 <input
                   type="text"
-                  placeholder="Nama Lengkap Siswa"
+                  placeholder="Nama Lengkap"
                   value={studentForm.nama}
                   onChange={(e) => setStudentForm({ ...studentForm, nama: e.target.value })}
                   required
-                  style={styles.input}
+                  style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #ccc', flex: '1 min-width: 150px' }}
                 />
                 <input
                   type="text"
@@ -334,7 +271,7 @@ export default function AdminDashboard() {
                   value={studentForm.username}
                   onChange={(e) => setStudentForm({ ...studentForm, username: e.target.value })}
                   required
-                  style={styles.input}
+                  style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #ccc', flex: '1 min-width: 150px' }}
                 />
                 <input
                   type="text"
@@ -342,35 +279,42 @@ export default function AdminDashboard() {
                   value={studentForm.password}
                   onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })}
                   required
-                  style={styles.input}
+                  style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #ccc', flex: '1 min-width: 150px' }}
                 />
-                <button type="submit" style={styles.btnPrimary}>+ Tambah Siswa</button>
+                <button type="submit" style={{ padding: '8px 16px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                  + Tambah Siswa
+                </button>
               </form>
             </div>
 
-            <div style={styles.card}>
-              <h3 style={styles.cardTitle}>Daftar Akun Siswa</h3>
-              <table style={styles.table}>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd' }}>
+              <h3 style={{ marginTop: 0 }}>Daftar Akun Siswa</h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr>
-                    <th style={styles.th}>Nama</th>
-                    <th style={styles.th}>Username</th>
-                    <th style={styles.th}>Aksi</th>
+                  <tr style={{ background: '#eee', textAlign: 'left' }}>
+                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Nama</th>
+                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Username</th>
+                    <th style={{ padding: '10px', border: '1px solid #ddd', width: '150px' }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((u) => (
-                    <tr key={u._id} style={styles.tr}>
-                      <td style={styles.td}>{u.nama}</td>
-                      <td style={styles.td}>{u.username}</td>
-                      <td style={styles.td}>
+                    <tr key={u._id}>
+                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{u.nama}</td>
+                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{u.username}</td>
+                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>
                         <button
                           onClick={() => setEditUser({ _id: u._id, nama: u.nama, username: u.username, password: '' })}
-                          style={styles.btnSec}
+                          style={{ padding: '4px 8px', marginRight: '6px', background: '#f0ad4e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                         >
                           Edit
                         </button>
-                        <button onClick={() => handleDeleteUser(u._id)} style={styles.btnDanger}>Hapus</button>
+                        <button
+                          onClick={() => handleDeleteUser(u._id)}
+                          style={{ padding: '4px 8px', background: '#d9534f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                        >
+                          Hapus
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -383,45 +327,45 @@ export default function AdminDashboard() {
         {/* BANK SOAL */}
         {activeTab === 'questions' && (
           <div>
-            <div style={{ ...styles.card, marginBottom: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ ...styles.cardTitle, margin: 0 }}>Kelola Soal Kuis</h3>
-                <label style={styles.btnUpload}>
-                  📁 Import Bulk JSON
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                <h3 style={{ margin: 0 }}>Input Soal Baru</h3>
+                <label style={{ padding: '8px 12px', background: '#333', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' }}>
+                  Import JSON
                   <input type="file" accept=".json" onChange={handleFileUpload} style={{ display: 'none' }} />
                 </label>
               </div>
 
               <form onSubmit={handleAddQuestion}>
-                <div style={styles.formGrid}>
-                  <div>
-                    <label style={styles.label}>Paket Soal</label>
+                <div style={{ display: 'flex', gap: '15px', marginBottom: '15px', flexWrap: 'wrap' }}>
+                  <div style={{ flex: '1' }}>
+                    <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Paket Soal:</label>
                     <input
                       type="number"
                       value={questionForm.paket}
                       onChange={(e) => setQuestionForm({ ...questionForm, paket: parseInt(e.target.value) || 1 })}
                       required
-                      style={styles.input}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                     />
                   </div>
-                  <div>
-                    <label style={styles.label}>Tingkat Kesulitan</label>
+                  <div style={{ flex: '1' }}>
+                    <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Tingkat Kesulitan:</label>
                     <select
                       value={questionForm.tingkatKesulitan}
                       onChange={(e) => setQuestionForm({ ...questionForm, tingkatKesulitan: e.target.value })}
-                      style={styles.input}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                     >
                       <option value="mudah">Mudah</option>
                       <option value="sedang">Sedang</option>
                       <option value="sulit">Sulit</option>
                     </select>
                   </div>
-                  <div>
-                    <label style={styles.label}>Kategori</label>
+                  <div style={{ flex: '1' }}>
+                    <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Kategori:</label>
                     <select
                       value={questionForm.kategori}
                       onChange={(e) => setQuestionForm({ ...questionForm, kategori: e.target.value })}
-                      style={styles.input}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                     >
                       <option value="matematika">Matematika</option>
                       <option value="bahasa_indonesia">Bahasa Indonesia</option>
@@ -429,43 +373,45 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div style={{ margin: '14px 0' }}>
-                  <label style={styles.label}>Pertanyaan Soal</label>
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Pertanyaan:</label>
                   <input
                     type="text"
                     placeholder="Tuliskan teks pertanyaan..."
                     value={questionForm.soal}
                     onChange={(e) => setQuestionForm({ ...questionForm, soal: e.target.value })}
                     required
-                    style={styles.input}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                   />
                 </div>
 
-                <label style={styles.label}>Pilihan Jawaban</label>
-                <div style={styles.grid2}>
-                  {questionForm.opsi.map((op, idx) => (
-                    <input
-                      key={idx}
-                      type="text"
-                      placeholder={`Pilihan ${String.fromCharCode(65 + idx)}`}
-                      value={op}
-                      onChange={(e) => {
-                        const nextOpsi = [...questionForm.opsi];
-                        nextOpsi[idx] = e.target.value;
-                        setQuestionForm({ ...questionForm, opsi: nextOpsi });
-                      }}
-                      required
-                      style={styles.input}
-                    />
-                  ))}
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Pilihan Jawaban:</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    {questionForm.opsi.map((op, idx) => (
+                      <input
+                        key={idx}
+                        type="text"
+                        placeholder={`Pilihan ${String.fromCharCode(65 + idx)}`}
+                        value={op}
+                        onChange={(e) => {
+                          const nextOpsi = [...questionForm.opsi];
+                          nextOpsi[idx] = e.target.value;
+                          setQuestionForm({ ...questionForm, opsi: nextOpsi });
+                        }}
+                        required
+                        style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                      />
+                    ))}
+                  </div>
                 </div>
 
-                <div style={{ margin: '14px 0 18px 0' }}>
-                  <label style={styles.label}>Kunci Jawaban Benar</label>
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Kunci Jawaban Benar:</label>
                   <select
                     value={questionForm.jawabanBenar}
                     onChange={(e) => setQuestionForm({ ...questionForm, jawabanBenar: parseInt(e.target.value) })}
-                    style={styles.input}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                   >
                     <option value={0}>Pilihan A</option>
                     <option value={1}>Pilihan B</option>
@@ -474,24 +420,26 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                <button type="submit" style={styles.btnPrimary}>+ Simpan Soal Manual</button>
+                <button type="submit" style={{ padding: '10px 20px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                  + Simpan Soal
+                </button>
               </form>
             </div>
 
-            <div style={styles.card}>
-              <h3 style={styles.cardTitle}>Daftar Soal Tersimpan ({questions.length})</h3>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd' }}>
+              <h3 style={{ marginTop: 0 }}>Daftar Soal ({questions.length})</h3>
               {questions.map((q, idx) => (
-                <div key={q._id || idx} style={styles.itemBox}>
-                  <div style={{ display: 'flex', gap: '8px', fontSize: '11px', color: '#666', marginBottom: '6px' }}>
-                    <span style={styles.badgeTag}>{q.kategori?.toUpperCase()}</span>
-                    <span style={styles.badgeTag}>PAKET {q.paket || 1}</span>
-                    <span style={styles.badgeTag}>{(q.tingkatKesulitan || 'SEDANG').toUpperCase()}</span>
+                <div key={q._id || idx} style={{ borderBottom: '1px solid #eee', paddingBottom: '12px', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>
+                    <b>[{q.kategori?.toUpperCase()}]</b> Paket {q.paket || 1} • Kesulitan: {q.tingkatKesulitan || 'sedang'}
                   </div>
-                  <strong style={{ fontSize: '14px', color: '#1e293b' }}>{q.soal}</strong>
-                  <div style={styles.grid2}>
+                  <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px' }}>
+                    {idx + 1}. {q.soal}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '13px' }}>
                     {q.opsi?.map((op, i) => (
-                      <span key={i} style={{ fontSize: '12px', color: i === q.jawabanBenar ? '#16a34a' : '#64748b', fontWeight: i === q.jawabanBenar ? '700' : '400' }}>
-                        {String.fromCharCode(65 + i)}. {op}
+                      <span key={i} style={{ color: i === q.jawabanBenar ? 'green' : '#333', fontWeight: i === q.jawabanBenar ? 'bold' : 'normal' }}>
+                        {String.fromCharCode(65 + i)}. {op} {i === q.jawabanBenar && '(Kunci)'}
                       </span>
                     ))}
                   </div>
@@ -503,25 +451,30 @@ export default function AdminDashboard() {
 
         {/* HASIL & STATISTIK */}
         {activeTab === 'stats' && (
-          <div style={styles.card}>
-            <h3 style={styles.cardTitle}>Lembar Hasil Kuis Siswa</h3>
-            <table style={styles.table}>
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd' }}>
+            <h3 style={{ marginTop: 0 }}>Lembar Hasil Kuis Siswa</h3>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr>
-                  <th style={styles.th}>Siswa</th>
-                  <th style={styles.th}>Kategori</th>
-                  <th style={styles.th}>Skor</th>
-                  <th style={styles.th}>Aksi</th>
+                <tr style={{ background: '#eee', textAlign: 'left' }}>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Siswa</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Kategori</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Skor</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd', width: '120px' }}>Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {results.map((r, idx) => (
-                  <tr key={idx} style={styles.tr}>
-                    <td style={styles.td}><strong>{r.nama}</strong></td>
-                    <td style={styles.td}>{r.kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}</td>
-                    <td style={styles.td}><strong>{r.skor}</strong></td>
-                    <td style={styles.td}>
-                      <button onClick={() => setSelectedDetail(r)} style={styles.btnSec}>Lihat Lembar</button>
+                  <tr key={idx}>
+                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>{r.nama}</td>
+                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>{r.kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}</td>
+                    <td style={{ padding: '10px', border: '1px solid #ddd' }}><b>{r.skor}</b></td>
+                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>
+                      <button
+                        onClick={() => setSelectedDetail(r)}
+                        style={{ padding: '4px 8px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                      >
+                        Lihat Lembar
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -532,29 +485,35 @@ export default function AdminDashboard() {
 
         {/* PENGATURAN AKUN */}
         {activeTab === 'account' && (
-          <div style={styles.card}>
-            <h3 style={styles.cardTitle}>Informasi Akun Administrator</h3>
-            <div style={{ fontSize: '14px', lineHeight: '1.8', color: '#334155' }}>
-              <p><strong>Username:</strong> {user.username}</p>
-              <p><strong>Role Status:</strong> Super Administrator</p>
-              <p><strong>Database:</strong> MongoDB Atlas (Active)</p>
-            </div>
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd' }}>
+            <h3 style={{ marginTop: 0 }}>Informasi Akun Admin</h3>
+            <p><b>Username:</b> {user.username}</p>
+            <p><b>Role Status:</b> Administrator</p>
           </div>
         )}
-      </main>
+      </div>
 
       {/* MODAL EDIT SISWA */}
       {editUser && (
-        <div style={styles.overlay}>
-          <div style={styles.modal}>
-            <h3 style={styles.cardTitle}>Edit Data Siswa</h3>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', width: '350px' }}>
+            <h3>Edit Data Siswa</h3>
             <form onSubmit={handleSaveEditUser}>
-              <input type="text" value={editUser.nama} onChange={(e) => setEditUser({ ...editUser, nama: e.target.value })} required style={{ ...styles.input, marginBottom: '10px' }} />
-              <input type="text" value={editUser.username} onChange={(e) => setEditUser({ ...editUser, username: e.target.value })} required style={{ ...styles.input, marginBottom: '10px' }} />
-              <input type="password" placeholder="Password Baru (Kosongkan bila tak diubah)" value={editUser.password} onChange={(e) => setEditUser({ ...editUser, password: e.target.value })} style={{ ...styles.input, marginBottom: '16px' }} />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                <button type="button" onClick={() => setEditUser(null)} style={styles.btnSec}>Batal</button>
-                <button type="submit" style={styles.btnPrimary}>Simpan</button>
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', fontSize: '12px' }}>Nama:</label>
+                <input type="text" value={editUser.nama} onChange={(e) => setEditUser({ ...editUser, nama: e.target.value })} required style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+              </div>
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', fontSize: '12px' }}>Username:</label>
+                <input type="text" value={editUser.username} onChange={(e) => setEditUser({ ...editUser, username: e.target.value })} required style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+              </div>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', fontSize: '12px' }}>Password Baru (Kosongkan jika tak diubah):</label>
+                <input type="password" value={editUser.password} onChange={(e) => setEditUser({ ...editUser, password: e.target.value })} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <button type="button" onClick={() => setEditUser(null)} style={{ padding: '6px 12px', marginRight: '8px', background: '#ccc', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Batal</button>
+                <button type="submit" style={{ padding: '6px 12px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Simpan</button>
               </div>
             </form>
           </div>
@@ -563,62 +522,30 @@ export default function AdminDashboard() {
 
       {/* MODAL DETAIL LEMBAR JAWABAN */}
       {selectedDetail && (
-        <div style={styles.overlay}>
-          <div style={{ ...styles.modal, maxWidth: '500px' }}>
-            <h3 style={styles.cardTitle}>Detail Lembar: {selectedDetail.nama}</h3>
-            <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '12px' }}>
-              Kategori: {selectedDetail.kategori} | Skor Akhir: <b>{selectedDetail.skor}</b>
-            </p>
-            <div style={{ maxHeight: '280px', overflowY: 'auto', marginBottom: '16px' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', width: '500px', maxHeight: '80vh', overflowY: 'auto' }}>
+            <h3 style={{ marginTop: 0 }}>Detail Lembar Jawaban</h3>
+            <p>Siswa: <b>{selectedDetail.nama}</b> | Kategori: <b>{selectedDetail.kategori}</b> | Skor: <b>{selectedDetail.skor}</b></p>
+            <hr />
+            <div>
               {selectedDetail.detailJawaban?.map((d, i) => (
-                <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid #e2e8f0', fontSize: '12px' }}>
-                  <p style={{ margin: '0 0 4px 0', fontWeight: '600' }}>{i + 1}. {d.soal}</p>
-                  <p style={{ margin: 0 }}>
-                    Jawaban: <b>{d.jawabanSiswa}</b> | Status:{' '}
-                    <span style={{ color: d.isCorrect ? '#16a34a' : '#dc2626', fontWeight: '700' }}>
+                <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}>
+                  <p style={{ margin: '0 0 5px 0', fontWeight: 'bold' }}>{i + 1}. {d.soal}</p>
+                  <p style={{ margin: 0, fontSize: '13px' }}>
+                    Jawaban Siswa: <b>{d.jawabanSiswa}</b> | Status:{' '}
+                    <span style={{ color: d.isCorrect ? 'green' : 'red', fontWeight: 'bold' }}>
                       {d.isCorrect ? 'BENAR' : `SALAH (Benar: ${d.jawabanBenar})`}
                     </span>
                   </p>
                 </div>
               ))}
             </div>
-            <button onClick={() => setSelectedDetail(null)} style={styles.btnPrimary}>Tutup</button>
+            <div style={{ textAlign: 'right', marginTop: '15px' }}>
+              <button onClick={() => setSelectedDetail(null)} style={{ padding: '6px 16px', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Tutup</button>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 }
-
-const styles = {
-  pageWrapper: { minHeight: '100vh', fontFamily: "'Plus Jakarta Sans', sans-serif", backgroundColor: '#f7f4ed', color: '#0f172a' },
-  header: { backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 40 },
-  headerInner: { maxWidth: '1000px', margin: '0 auto', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  brand: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '18px' },
-  roleBadge: { fontSize: '10px', backgroundColor: '#f6ca85', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', marginLeft: '4px' },
-  desktopNav: { display: 'flex', gap: '20px', fontSize: '13px', fontWeight: '600' },
-  btnLogout: { padding: '6px 14px', fontSize: '12px', fontWeight: '700', borderRadius: '6px', border: 'none', backgroundColor: '#f6ca85', color: '#0f172a', cursor: 'pointer' },
-  mainContainer: { maxWidth: '1000px', margin: '0 auto', padding: '24px 20px' },
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '20px' },
-  statCard: { backgroundColor: '#ffffff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0', textAlign: 'center' },
-  statLabel: { fontSize: '11px', fontWeight: '700', color: '#64748b' },
-  statValue: { display: 'block', fontSize: '32px', fontWeight: '800', color: '#0f172a', marginTop: '4px' },
-  card: { backgroundColor: '#ffffff', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0' },
-  cardTitle: { fontSize: '16px', fontWeight: '700', marginBottom: '16px', color: '#0f172a' },
-  table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
-  th: { padding: '10px', fontSize: '12px', fontWeight: '700', color: '#64748b', borderBottom: '1px solid #e2e8f0' },
-  tr: { borderBottom: '1px solid #f1f5f9' },
-  td: { padding: '12px 10px', fontSize: '13px', color: '#334155' },
-  formGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' },
-  grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '8px' },
-  input: { width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', fontSize: '13px', outline: 'none' },
-  label: { display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '4px' },
-  btnPrimary: { padding: '10px 18px', backgroundColor: '#f6ca85', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '700', color: '#0f172a', cursor: 'pointer' },
-  btnSec: { padding: '6px 12px', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' },
-  btnDanger: { padding: '6px 12px', backgroundColor: '#fef2f2', border: 'none', color: '#dc2626', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', marginLeft: '6px', fontWeight: '600' },
-  btnUpload: { padding: '8px 14px', backgroundColor: '#0f172a', color: '#ffffff', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
-  itemBox: { padding: '14px', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '10px', backgroundColor: '#f8fafc' },
-  badgeTag: { fontSize: '10px', fontWeight: '700', backgroundColor: '#e2e8f0', padding: '2px 6px', borderRadius: '4px', color: '#334155' },
-  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px', zIndex: 50 },
-  modal: { width: '100%', maxWidth: '400px', backgroundColor: '#ffffff', borderRadius: '12px', padding: '24px' },
-};
