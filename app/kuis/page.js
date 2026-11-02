@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation';
 export default function KuisPage() {
   const [user, setUser] = useState(null);
   const [kategori, setKategori] = useState('');
+  const [paket, setPaket] = useState(1);
+  const [tingkatKesulitan, setTingkatKesulitan] = useState('sedang');
+  
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [skor, setSkor] = useState(0);
@@ -30,14 +33,14 @@ export default function KuisPage() {
     }
   }, []);
 
-  const startKuis = async (kat) => {
-    setKategori(kat);
+  const startKuis = async (selectedKat) => {
+    setKategori(selectedKat);
 
     const resUser = await fetch('/api/admin/users');
     const dataUser = await resUser.json();
     if (dataUser.success) {
       const hasDone = dataUser.results.some(
-        (r) => r.userId === user.id && r.kategori === kat
+        (r) => r.userId === user.id && r.kategori === selectedKat && (r.paket || 1) === paket
       );
       if (hasDone) {
         setAlreadyTaken(true);
@@ -48,7 +51,12 @@ export default function KuisPage() {
     const res = await fetch('/api/admin/questions');
     const data = await res.json();
     if (data.success) {
-      const filtered = data.questions.filter((q) => q.kategori === kat);
+      const filtered = data.questions.filter(
+        (q) =>
+          q.kategori === selectedKat &&
+          (parseInt(q.paket) || 1) === parseInt(paket) &&
+          (q.tingkatKesulitan || 'sedang') === tingkatKesulitan
+      );
       setQuestions(filtered);
     }
   };
@@ -90,6 +98,8 @@ export default function KuisPage() {
             userId: user.id,
             nama: user.nama || user.username,
             kategori,
+            paket,
+            tingkatKesulitan,
             skor: currentSkor,
             detailJawaban: newAnswers
           }),
@@ -105,121 +115,170 @@ export default function KuisPage() {
 
   if (!user) return null;
 
+  // LAYAR JIKA SUDAH PERNAH KERJAKAN
   if (alreadyTaken) {
     return (
-      <div style={styles.pageWrapper}>
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-          * { box-sizing: border-box; }
-          body { margin: 0; background-color: #f7f4ed; }
-        `}</style>
-
-        <div style={styles.centerBox}>
-          <div style={styles.alertIcon}>⚠️</div>
-          <h3 style={{ color: '#c53030', margin: '10px 0 5px 0', fontSize: '20px' }}>Perhatian</h3>
-          <p style={{ margin: '15px 0 25px 0', fontSize: '14px', color: '#555', lineHeight: '1.5' }}>
-            Kamu sudah pernah mengerjakan kuis kategori <b>{kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}</b>.
+      <div style={{ fontFamily: 'sans-serif', backgroundColor: '#f4f4f9', minHeight: '100vh', padding: '15px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ccc', maxWidth: '400px', width: '100%', textAlign: 'center' }}>
+          <div style={{ fontSize: '32px', marginBottom: '10px' }}>⚠️</div>
+          <h3 style={{ color: '#d9534f', margin: '0 0 10px 0', fontSize: '18px' }}>Perhatian</h3>
+          <p style={{ fontSize: '14px', color: '#555', lineHeight: '1.4', marginBottom: '20px' }}>
+            Kamu sudah pernah mengerjakan Paket {paket} ({kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}).
           </p>
-          <button onClick={() => setAlreadyTaken(false)} style={styles.katBtn}>Pilih Kategori Lain</button>
-          <button onClick={handleLogout} style={{ ...styles.katBtn, backgroundColor: '#e2ddd0', color: '#333' }}>Logout</button>
+          <button
+            onClick={() => setAlreadyTaken(false)}
+            style={{ width: '100%', padding: '10px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginBottom: '10px' }}
+          >
+            Pilih Paket / Kategori Lain
+          </button>
+          <button
+            onClick={handleLogout}
+            style={{ width: '100%', padding: '10px', background: '#d9534f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            Logout
+          </button>
         </div>
       </div>
     );
   }
 
+  // LAYAR PILIH PARAMETER & KATEGORI
   if (!kategori) {
     return (
-      <div style={styles.pageWrapper}>
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-          * { box-sizing: border-box; }
-          body { margin: 0; background-color: #f7f4ed; }
-        `}</style>
-
-        <div style={styles.centerBox}>
-          <div style={{ textAlign: 'right', marginBottom: '10px' }}>
-            <button onClick={handleLogout} style={styles.logoutBtnSmall}>Logout</button>
+      <div style={{ fontFamily: 'sans-serif', backgroundColor: '#f4f4f9', minHeight: '100vh', padding: '15px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ccc', maxWidth: '400px', width: '100%' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+            <h3 style={{ margin: 0, fontSize: '16px' }}>Pilih Kuis</h3>
+            <button onClick={handleLogout} style={{ padding: '4px 10px', background: '#d9534f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Logout</button>
           </div>
-          <h2 style={styles.title}>Pilih Kategori Kuis</h2>
-          <p style={{ fontSize: '14px', color: '#666', marginBottom: '25px' }}>Halo <b>{user.nama || user.username}</b>, selamat mengerjakan!</p>
-          
-          <button onClick={() => startKuis('matematika')} style={styles.katBtn}>📐 Matematika</button>
-          <button onClick={() => startKuis('bahasa_indonesia')} style={{ ...styles.katBtn, backgroundColor: '#8b5cf6', color: '#fff' }}>📖 Bahasa Indonesia</button>
+
+          <p style={{ fontSize: '14px', color: '#666', marginTop: 0, marginBottom: '15px' }}>Halo <b>{user.nama || user.username}</b>, silakan pilih kuis:</p>
+
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ display: 'block', fontSize: '13px', marginBottom: '4px' }}>Paket Soal:</label>
+            <select
+              value={paket}
+              onChange={(e) => setPaket(parseInt(e.target.value))}
+              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+            >
+              <option value={1}>Paket 1</option>
+              <option value={2}>Paket 2</option>
+              <option value={3}>Paket 3</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', fontSize: '13px', marginBottom: '4px' }}>Tingkat Kesulitan:</label>
+            <select
+              value={tingkatKesulitan}
+              onChange={(e) => setTingkatKesulitan(e.target.value)}
+              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+            >
+              <option value="mudah">Mudah</option>
+              <option value="sedang">Sedang</option>
+              <option value="sulit">Sulit</option>
+            </select>
+          </div>
+
+          <button
+            onClick={() => startKuis('matematika')}
+            style={{ width: '100%', padding: '10px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginBottom: '10px' }}
+          >
+            📐 Matematika
+          </button>
+          <button
+            onClick={() => startKuis('bahasa_indonesia')}
+            style={{ width: '100%', padding: '10px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            📖 Bahasa Indonesia
+          </button>
         </div>
       </div>
     );
   }
 
+  // LAYAR HASIL SELESAI
   if (isDone) {
     return (
-      <div style={styles.pageWrapper}>
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-          * { box-sizing: border-box; }
-          body { margin: 0; background-color: #f7f4ed; }
-        `}</style>
-
-        <div style={styles.centerBox}>
+      <div style={{ fontFamily: 'sans-serif', backgroundColor: '#f4f4f9', minHeight: '100vh', padding: '15px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ccc', maxWidth: '400px', width: '100%', textAlign: 'center' }}>
           <div style={{ fontSize: '40px', marginBottom: '10px' }}>🎉</div>
-          <h2 style={styles.title}>Kuis Selesai</h2>
-          <p style={{ color: '#666', fontSize: '14px', margin: '5px 0' }}>Nilai Kamu:</p>
-          <h1 style={{ fontSize: '56px', color: '#1a1a1a', margin: '15px 0', fontWeight: '800' }}>{skor}</h1>
-          <button onClick={handleLogout} style={styles.katBtn}>Keluar / Logout</button>
+          <h3 style={{ margin: '0 0 5px 0' }}>Kuis Selesai</h3>
+          <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>Nilai Akhir Kamu:</p>
+          <h1 style={{ fontSize: '48px', color: '#333', margin: '10px 0' }}>{skor}</h1>
+          <button
+            onClick={handleLogout}
+            style={{ width: '100%', padding: '10px', background: '#d9534f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            Keluar / Logout
+          </button>
         </div>
       </div>
     );
   }
 
-  if (questions.length === 0) return (
-    <div style={styles.pageWrapper}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-        * { box-sizing: border-box; }
-        body { margin: 0; background-color: #f7f4ed; }
-      `}</style>
-
-      <div style={styles.centerBox}>
-        <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>Belum ada soal untuk kategori ini.</p>
-        <button onClick={() => setKategori('')} style={styles.katBtn}>Kembali</button>
+  // LAYAR JIKA SOAL KOSONG
+  if (questions.length === 0) {
+    return (
+      <div style={{ fontFamily: 'sans-serif', backgroundColor: '#f4f4f9', minHeight: '100vh', padding: '15px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ccc', maxWidth: '400px', width: '100%', textAlign: 'center' }}>
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '15px' }}>
+            Belum ada soal untuk Paket {paket} ({tingkatKesulitan.toUpperCase()}).
+          </p>
+          <button
+            onClick={() => setKategori('')}
+            style={{ padding: '8px 16px', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+          >
+            Kembali
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   const q = questions[currentIndex];
 
+  // LAYAR PENGERJAAN SOAL
   return (
-    <div style={styles.pageWrapper}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-        * { box-sizing: border-box; }
-        body { margin: 0; background-color: #f7f4ed; }
-      `}</style>
-
-      <div style={styles.centerBox}>
-        <div style={styles.progressBar}>
-          <div style={{ ...styles.progressFill, width: `${((currentIndex + 1) / questions.length) * 100}%` }}></div>
+    <div style={{ fontFamily: 'sans-serif', backgroundColor: '#f4f4f9', minHeight: '100vh', padding: '15px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ccc', maxWidth: '450px', width: '100%', boxSizing: 'border-box' }}>
+        {/* Progress Bar */}
+        <div style={{ width: '100%', height: '8px', background: '#eee', borderRadius: '4px', overflow: 'hidden', marginBottom: '15px' }}>
+          <div style={{ height: '100%', background: '#5cb85c', width: `${((currentIndex + 1) / questions.length) * 100}%`, transition: 'width 0.3s' }}></div>
         </div>
 
-        <p style={{ fontSize: '12px', color: '#888', fontWeight: '600', marginBottom: '8px' }}>
-          SOAL {currentIndex + 1} DARI {questions.length}
-        </p>
-        <h3 style={styles.questionText}>{q.soal}</h3>
+        <div style={{ fontSize: '12px', color: '#666', fontWeight: 'bold', marginBottom: '8px' }}>
+          SOAL {currentIndex + 1} DARI {questions.length} (PAKET {paket})
+        </div>
 
-        <div>
+        <h3 style={{ fontSize: '16px', color: '#333', margin: '0 0 15px 0', lineHeight: '1.4' }}>
+          {q.soal}
+        </h3>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {q.opsi.map((opsiText, idx) => (
             <button
               key={idx}
               disabled={answered}
               onClick={() => handleAnswer(idx)}
               style={{
-                ...styles.optionBtn,
-                backgroundColor: answered ? '#faf8f5' : '#ffffff',
-                borderColor: answered ? '#e2ddd0' : '#e2ddd0',
-                cursor: answered ? 'not-allowed' : 'pointer'
+                display: 'flex',
+                alignItems: 'center',
+                width: '100%',
+                padding: '10px 12px',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                background: answered ? '#f9f9f9' : '#fff',
+                cursor: answered ? 'not-allowed' : 'pointer',
+                textAlign: 'left',
+                fontSize: '13px',
+                boxSizing: 'border-box'
               }}
             >
-              <span style={styles.optionBadge}>{String.fromCharCode(65 + idx)}</span>
-              {opsiText}
+              <strong style={{ minWidth: '24px', height: '24px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#eee', borderRadius: '3px', marginRight: '10px', fontSize: '12px' }}>
+                {String.fromCharCode(65 + idx)}
+              </strong>
+              <span style={{ wordBreak: 'break-word' }}>{opsiText}</span>
             </button>
           ))}
         </div>
@@ -227,110 +286,3 @@ export default function KuisPage() {
     </div>
   );
 }
-
-const styles = {
-  pageWrapper: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
-    backgroundColor: '#f7f4ed',
-    padding: '20px',
-  },
-  centerBox: {
-    width: '100%',
-    maxWidth: '440px',
-    padding: '36px 28px',
-    background: '#ffffff',
-    border: '1px solid #eae5d9',
-    borderRadius: '24px',
-    textAlign: 'center',
-    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.04)',
-    position: 'relative',
-  },
-  title: {
-    fontSize: '22px',
-    fontWeight: '700',
-    color: '#1a1a1a',
-    margin: '0 0 8px 0',
-  },
-  questionText: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#2d2d2d',
-    margin: '15px 0 25px 0',
-    lineHeight: '1.4',
-  },
-  katBtn: {
-    display: 'block',
-    width: '100%',
-    padding: '14px',
-    margin: '12px 0',
-    backgroundColor: '#f6ca85',
-    color: '#1a1a1a',
-    border: 'none',
-    borderRadius: '12px',
-    fontSize: '15px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-    transition: 'all 0.2s',
-  },
-  optionBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%',
-    padding: '14px 16px',
-    margin: '10px 0',
-    border: '1.5px solid #e2ddd0',
-    borderRadius: '12px',
-    textAlign: 'left',
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#333333',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.02)',
-  },
-  optionBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '28px',
-    height: '28px',
-    borderRadius: '8px',
-    backgroundColor: '#f7f4ed',
-    color: '#1a1a1a',
-    fontWeight: '700',
-    fontSize: '12px',
-    marginRight: '12px',
-    flexShrink: 0,
-  },
-  logoutBtnSmall: {
-    padding: '6px 14px',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    backgroundColor: '#faf8f5',
-    border: '1px solid #e2ddd0',
-    borderRadius: '8px',
-    color: '#666',
-  },
-  progressBar: {
-    width: '100%',
-    height: '6px',
-    backgroundColor: '#f7f4ed',
-    borderRadius: '10px',
-    overflow: 'hidden',
-    marginBottom: '20px',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#f6ca85',
-    borderRadius: '10px',
-    transition: 'width 0.3s ease',
-  },
-  alertIcon: {
-    fontSize: '36px',
-    marginBottom: '10px',
-  },
-};
