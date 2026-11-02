@@ -1,6 +1,5 @@
 import clientPromise from '@/lib/mongodb';
 import { NextResponse } from 'next/server';
-import { ObjectId } from 'mongodb';
 
 export async function GET() {
   try {
@@ -25,6 +24,8 @@ export async function POST(request) {
       }
 
       const formattedQuestions = body.map((q) => ({
+        paket: parseInt(q.paket) || 1,
+        tingkatKesulitan: q.tingkatKesulitan || 'sedang',
         kategori: q.kategori,
         soal: q.soal,
         opsi: q.opsi,
@@ -35,8 +36,10 @@ export async function POST(request) {
       return NextResponse.json({ success: true, message: `${formattedQuestions.length} soal berhasil diunggah` });
     }
 
-    const { kategori, soal, opsi, jawabanBenar } = body;
+    const { paket, tingkatKesulitan, kategori, soal, opsi, jawabanBenar } = body;
     await db.collection('questions').insertOne({
+      paket: parseInt(paket) || 1,
+      tingkatKesulitan: tingkatKesulitan || 'sedang',
       kategori,
       soal,
       opsi,
