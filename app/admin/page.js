@@ -171,32 +171,30 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div style={{ fontFamily: 'sans-serif', backgroundColor: '#f4f4f9', minHeight: '100vh', padding: '20px' }}>
+    <div style={{ fontFamily: 'sans-serif', backgroundColor: '#f4f4f9', minHeight: '100vh', padding: '15px' }}>
       
-      {/* HEADER BAR & TOMBOL GARIS TIGA (KANAN ATAS) */}
-      <div style={{ background: '#fff', padding: '15px 20px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <strong style={{ fontSize: '18px', marginRight: '10px' }}>Admin Dashboard</strong>
-          <small style={{ color: '#666' }}>({user.nama || user.username})</small>
+      {/* HEADER BAR & MENU GARIS TIGA */}
+      <div style={{ background: '#fff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <strong style={{ fontSize: '16px', display: 'block' }}>Admin Dashboard</strong>
+          <small style={{ color: '#666', fontSize: '12px' }}>({user.nama || user.username})</small>
         </div>
         
-        {/* Tombol Garis Tiga */}
         <button
           onClick={() => setIsMenuOpen(true)}
-          style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '0 8px' }}
+          style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '0 4px' }}
         >
           ☰
         </button>
       </div>
 
-      {/* OVERLAY & PANEL SIDEBAR MENU (MUNCUL DI KIRI) */}
+      {/* OVERLAY & PANEL SIDEBAR MENU (DI KIRI) */}
       {isMenuOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 99 }}>
-          <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: '250px', background: '#fff', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '2px 0 8px rgba(0,0,0,0.1)' }}>
+          <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: '240px', background: '#fff', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '2px 0 8px rgba(0,0,0,0.1)' }}>
             
-            {/* Draf Menu Atas */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <h3 style={{ margin: 0, fontSize: '16px' }}>Menu Admin</h3>
                 <button onClick={() => setIsMenuOpen(false)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer' }}>✕</button>
               </div>
@@ -210,7 +208,7 @@ export default function AdminDashboard() {
                       setIsMenuOpen(false);
                     }}
                     style={{
-                      padding: '10px 14px',
+                      padding: '10px 12px',
                       textAlign: 'left',
                       border: '1px solid #ddd',
                       borderRadius: '4px',
@@ -226,7 +224,6 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Tombol Logout (Di Paling Bawah Menu) */}
             <button
               onClick={handleLogout}
               style={{ padding: '10px', background: '#d9534f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}
@@ -241,66 +238,69 @@ export default function AdminDashboard() {
       <div>
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-              <span style={{ display: 'block', color: '#666', fontSize: '14px' }}>Total Siswa</span>
-              <strong style={{ fontSize: '28px' }}>{users.length}</strong>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
+              <span style={{ display: 'block', color: '#666', fontSize: '12px' }}>Total Siswa</span>
+              <strong style={{ fontSize: '24px' }}>{users.length}</strong>
             </div>
-            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-              <span style={{ display: 'block', color: '#666', fontSize: '14px' }}>Total Soal</span>
-              <strong style={{ fontSize: '28px' }}>{questions.length}</strong>
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
+              <span style={{ display: 'block', color: '#666', fontSize: '12px' }}>Total Soal</span>
+              <strong style={{ fontSize: '24px' }}>{questions.length}</strong>
             </div>
-            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-              <span style={{ display: 'block', color: '#666', fontSize: '14px' }}>Kuis Selesai</span>
-              <strong style={{ fontSize: '28px' }}>{results.length}</strong>
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
+              <span style={{ display: 'block', color: '#666', fontSize: '12px' }}>Kuis Selesai</span>
+              <strong style={{ fontSize: '24px' }}>{results.length}</strong>
             </div>
           </div>
         )}
 
-        {/* AKTIVITAS PENGERJAAN TERBARU (TAB TERPISAH) */}
+        {/* AKTIVITAS TERBARU */}
         {activeTab === 'activity' && (
-          <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd' }}>
-            <h3 style={{ marginTop: 0 }}>Aktivitas Pengerjaan Terbaru</h3>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: '#eee', textAlign: 'left' }}>
-                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Nama Siswa</th>
-                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Username</th>
-                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Matematika</th>
-                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Bahasa Indonesia</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => {
-                  const mtk = results.find((r) => r.userId === u._id && r.kategori === 'matematika');
-                  const indo = results.find((r) => r.userId === u._id && r.kategori === 'bahasa_indonesia');
-                  return (
-                    <tr key={u._id}>
-                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{u.nama || u.username}</td>
-                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{u.username}</td>
-                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{mtk ? mtk.skor : '-'}</td>
-                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{indo ? indo.skor : '-'}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', overflow: 'hidden' }}>
+            <h3 style={{ marginTop: 0, fontSize: '16px' }}>Aktivitas Pengerjaan Terbaru</h3>
+            {/* PembungkusScroll Otomatis agar tidak meleber */}
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
+                <thead>
+                  <tr style={{ background: '#eee', textAlign: 'left', fontSize: '13px' }}>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Nama Siswa</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Username</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Matematika</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Bahasa Indonesia</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u) => {
+                    const mtk = results.find((r) => r.userId === u._id && r.kategori === 'matematika');
+                    const indo = results.find((r) => r.userId === u._id && r.kategori === 'bahasa_indonesia');
+                    return (
+                      <tr key={u._id} style={{ fontSize: '13px' }}>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{u.nama || u.username}</td>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{u.username}</td>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{mtk ? mtk.skor : '-'}</td>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{indo ? indo.skor : '-'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
         {/* DATA SISWA */}
         {activeTab === 'students' && (
           <div>
-            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '20px' }}>
-              <h3 style={{ marginTop: 0 }}>Tambah Akun Siswa Baru</h3>
-              <form onSubmit={handleAddStudent} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px' }}>
+              <h3 style={{ marginTop: 0, fontSize: '16px' }}>Tambah Akun Siswa Baru</h3>
+              <form onSubmit={handleAddStudent} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <input
                   type="text"
                   placeholder="Nama Lengkap"
                   value={studentForm.nama}
                   onChange={(e) => setStudentForm({ ...studentForm, nama: e.target.value })}
                   required
-                  style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #ccc', flex: '1 min-width: 150px' }}
+                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
                 />
                 <input
                   type="text"
@@ -308,7 +308,7 @@ export default function AdminDashboard() {
                   value={studentForm.username}
                   onChange={(e) => setStudentForm({ ...studentForm, username: e.target.value })}
                   required
-                  style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #ccc', flex: '1 min-width: 150px' }}
+                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
                 />
                 <input
                   type="text"
@@ -316,47 +316,49 @@ export default function AdminDashboard() {
                   value={studentForm.password}
                   onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })}
                   required
-                  style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #ccc', flex: '1 min-width: 150px' }}
+                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
                 />
-                <button type="submit" style={{ padding: '8px 16px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                <button type="submit" style={{ padding: '8px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
                   + Tambah Siswa
                 </button>
               </form>
             </div>
 
-            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd' }}>
-              <h3 style={{ marginTop: 0 }}>Daftar Akun Siswa</h3>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#eee', textAlign: 'left' }}>
-                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Nama</th>
-                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Username</th>
-                    <th style={{ padding: '10px', border: '1px solid #ddd', width: '150px' }}>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u) => (
-                    <tr key={u._id}>
-                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{u.nama}</td>
-                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{u.username}</td>
-                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                        <button
-                          onClick={() => setEditUser({ _id: u._id, nama: u.nama, username: u.username, password: '' })}
-                          style={{ padding: '4px 8px', marginRight: '6px', background: '#f0ad4e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteUser(u._id)}
-                          style={{ padding: '4px 8px', background: '#d9534f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                        >
-                          Hapus
-                        </button>
-                      </td>
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', overflow: 'hidden' }}>
+              <h3 style={{ marginTop: 0, fontSize: '16px' }}>Daftar Akun Siswa</h3>
+              <div style={{ overflowX: 'auto', width: '100%' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '350px' }}>
+                  <thead>
+                    <tr style={{ background: '#eee', textAlign: 'left', fontSize: '13px' }}>
+                      <th style={{ padding: '8px', border: '1px solid #ddd' }}>Nama</th>
+                      <th style={{ padding: '8px', border: '1px solid #ddd' }}>Username</th>
+                      <th style={{ padding: '8px', border: '1px solid #ddd', width: '110px' }}>Aksi</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {users.map((u) => (
+                      <tr key={u._id} style={{ fontSize: '13px' }}>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{u.nama}</td>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{u.username}</td>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>
+                          <button
+                            onClick={() => setEditUser({ _id: u._id, nama: u.nama, username: u.username, password: '' })}
+                            style={{ padding: '4px 6px', marginRight: '4px', background: '#f0ad4e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(u._id)}
+                            style={{ padding: '4px 6px', background: '#d9534f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                          >
+                            Hapus
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
@@ -364,45 +366,45 @@ export default function AdminDashboard() {
         {/* BANK SOAL */}
         {activeTab === 'questions' && (
           <div>
-            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <h3 style={{ margin: 0 }}>Input Soal Baru</h3>
-                <label style={{ padding: '8px 12px', background: '#333', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' }}>
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h3 style={{ margin: 0, fontSize: '16px' }}>Input Soal Baru</h3>
+                <label style={{ padding: '6px 10px', background: '#333', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
                   Import JSON
                   <input type="file" accept=".json" onChange={handleFileUpload} style={{ display: 'none' }} />
                 </label>
               </div>
 
               <form onSubmit={handleAddQuestion}>
-                <div style={{ display: 'flex', gap: '15px', marginBottom: '15px', flexWrap: 'wrap' }}>
-                  <div style={{ flex: '1' }}>
-                    <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Paket Soal:</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Paket Soal:</label>
                     <input
                       type="number"
                       value={questionForm.paket}
                       onChange={(e) => setQuestionForm({ ...questionForm, paket: parseInt(e.target.value) || 1 })}
                       required
-                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
                     />
                   </div>
-                  <div style={{ flex: '1' }}>
-                    <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Tingkat Kesulitan:</label>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Tingkat Kesulitan:</label>
                     <select
                       value={questionForm.tingkatKesulitan}
                       onChange={(e) => setQuestionForm({ ...questionForm, tingkatKesulitan: e.target.value })}
-                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
                     >
                       <option value="mudah">Mudah</option>
                       <option value="sedang">Sedang</option>
                       <option value="sulit">Sulit</option>
                     </select>
                   </div>
-                  <div style={{ flex: '1' }}>
-                    <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Kategori:</label>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Kategori:</label>
                     <select
                       value={questionForm.kategori}
                       onChange={(e) => setQuestionForm({ ...questionForm, kategori: e.target.value })}
-                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
                     >
                       <option value="matematika">Matematika</option>
                       <option value="bahasa_indonesia">Bahasa Indonesia</option>
@@ -410,21 +412,21 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Pertanyaan:</label>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Pertanyaan:</label>
                   <input
                     type="text"
                     placeholder="Tuliskan teks pertanyaan..."
                     value={questionForm.soal}
                     onChange={(e) => setQuestionForm({ ...questionForm, soal: e.target.value })}
                     required
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
                   />
                 </div>
 
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Pilihan Jawaban:</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Pilihan Jawaban:</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {questionForm.opsi.map((op, idx) => (
                       <input
                         key={idx}
@@ -437,18 +439,18 @@ export default function AdminDashboard() {
                           setQuestionForm({ ...questionForm, opsi: nextOpsi });
                         }}
                         required
-                        style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                        style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
                       />
                     ))}
                   </div>
                 </div>
 
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', fontSize: '14px', marginBottom: '5px' }}>Kunci Jawaban Benar:</label>
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Kunci Jawaban Benar:</label>
                   <select
                     value={questionForm.jawabanBenar}
                     onChange={(e) => setQuestionForm({ ...questionForm, jawabanBenar: parseInt(e.target.value) })}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
                   >
                     <option value={0}>Pilihan A</option>
                     <option value={1}>Pilihan B</option>
@@ -457,23 +459,23 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                <button type="submit" style={{ padding: '10px 20px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                <button type="submit" style={{ padding: '10px', width: '100%', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
                   + Simpan Soal
                 </button>
               </form>
             </div>
 
-            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd' }}>
-              <h3 style={{ marginTop: 0 }}>Daftar Soal ({questions.length})</h3>
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd' }}>
+              <h3 style={{ marginTop: 0, fontSize: '16px' }}>Daftar Soal ({questions.length})</h3>
               {questions.map((q, idx) => (
-                <div key={q._id || idx} style={{ borderBottom: '1px solid #eee', paddingBottom: '12px', marginBottom: '12px' }}>
-                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>
-                    <b>[{q.kategori?.toUpperCase()}]</b> Paket {q.paket || 1} • Kesulitan: {q.tingkatKesulitan || 'sedang'}
+                <div key={q._id || idx} style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>
+                    <b>[{q.kategori?.toUpperCase()}]</b> Paket {q.paket || 1} • {q.tingkatKesulitan || 'sedang'}
                   </div>
-                  <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px' }}>
                     {idx + 1}. {q.soal}
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '13px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px' }}>
                     {q.opsi?.map((op, i) => (
                       <span key={i} style={{ color: i === q.jawabanBenar ? 'green' : '#333', fontWeight: i === q.jawabanBenar ? 'bold' : 'normal' }}>
                         {String.fromCharCode(65 + i)}. {op} {i === q.jawabanBenar && '(Kunci)'}
@@ -488,69 +490,71 @@ export default function AdminDashboard() {
 
         {/* HASIL & STATISTIK */}
         {activeTab === 'stats' && (
-          <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd' }}>
-            <h3 style={{ marginTop: 0 }}>Lembar Hasil Kuis Siswa</h3>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: '#eee', textAlign: 'left' }}>
-                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Siswa</th>
-                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Kategori</th>
-                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Skor</th>
-                  <th style={{ padding: '10px', border: '1px solid #ddd', width: '120px' }}>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.map((r, idx) => (
-                  <tr key={idx}>
-                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>{r.nama}</td>
-                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>{r.kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}</td>
-                    <td style={{ padding: '10px', border: '1px solid #ddd' }}><b>{r.skor}</b></td>
-                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                      <button
-                        onClick={() => setSelectedDetail(r)}
-                        style={{ padding: '4px 8px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                      >
-                        Lihat Lembar
-                      </button>
-                    </td>
+          <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', overflow: 'hidden' }}>
+            <h3 style={{ marginTop: 0, fontSize: '16px' }}>Lembar Hasil Kuis Siswa</h3>
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '350px' }}>
+                <thead>
+                  <tr style={{ background: '#eee', textAlign: 'left', fontSize: '13px' }}>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Siswa</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Kategori</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Skor</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd', width: '90px' }}>Aksi</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {results.map((r, idx) => (
+                    <tr key={idx} style={{ fontSize: '13px' }}>
+                      <td style={{ padding: '8px', border: '1px solid #ddd' }}>{r.nama}</td>
+                      <td style={{ padding: '8px', border: '1px solid #ddd' }}>{r.kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}</td>
+                      <td style={{ padding: '8px', border: '1px solid #ddd' }}><b>{r.skor}</b></td>
+                      <td style={{ padding: '8px', border: '1px solid #ddd' }}>
+                        <button
+                          onClick={() => setSelectedDetail(r)}
+                          style={{ padding: '4px 6px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                        >
+                          Lihat
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
         {/* PENGATURAN AKUN */}
         {activeTab === 'account' && (
-          <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd' }}>
-            <h3 style={{ marginTop: 0 }}>Informasi Akun Admin</h3>
-            <p><b>Username:</b> {user.username}</p>
-            <p><b>Role Status:</b> Administrator</p>
+          <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}>
+            <h3 style={{ marginTop: 0, fontSize: '16px' }}>Informasi Akun Admin</h3>
+            <p style={{ margin: '5px 0' }}><b>Username:</b> {user.username}</p>
+            <p style={{ margin: '5px 0' }}><b>Role Status:</b> Administrator</p>
           </div>
         )}
       </div>
 
       {/* MODAL EDIT SISWA */}
       {editUser && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', width: '350px' }}>
-            <h3>Edit Data Siswa</h3>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', zIndex: 100 }}>
+          <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', width: '100%', maxWidth: '320px' }}>
+            <h3 style={{ marginTop: 0, fontSize: '16px' }}>Edit Data Siswa</h3>
             <form onSubmit={handleSaveEditUser}>
-              <div style={{ marginBottom: '10px' }}>
+              <div style={{ marginBottom: '8px' }}>
                 <label style={{ display: 'block', fontSize: '12px' }}>Nama:</label>
-                <input type="text" value={editUser.nama} onChange={(e) => setEditUser({ ...editUser, nama: e.target.value })} required style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                <input type="text" value={editUser.nama} onChange={(e) => setEditUser({ ...editUser, nama: e.target.value })} required style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }} />
               </div>
-              <div style={{ marginBottom: '10px' }}>
+              <div style={{ marginBottom: '8px' }}>
                 <label style={{ display: 'block', fontSize: '12px' }}>Username:</label>
-                <input type="text" value={editUser.username} onChange={(e) => setEditUser({ ...editUser, username: e.target.value })} required style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                <input type="text" value={editUser.username} onChange={(e) => setEditUser({ ...editUser, username: e.target.value })} required style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }} />
               </div>
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', fontSize: '12px' }}>Password Baru (Kosongkan jika tak diubah):</label>
-                <input type="password" value={editUser.password} onChange={(e) => setEditUser({ ...editUser, password: e.target.value })} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', fontSize: '12px' }}>Password Baru (Opsional):</label>
+                <input type="password" value={editUser.password} onChange={(e) => setEditUser({ ...editUser, password: e.target.value })} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }} />
               </div>
               <div style={{ textAlign: 'right' }}>
-                <button type="button" onClick={() => setEditUser(null)} style={{ padding: '6px 12px', marginRight: '8px', background: '#ccc', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Batal</button>
-                <button type="submit" style={{ padding: '6px 12px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Simpan</button>
+                <button type="button" onClick={() => setEditUser(null)} style={{ padding: '6px 12px', marginRight: '6px', background: '#ccc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Batal</button>
+                <button type="submit" style={{ padding: '6px 12px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Simpan</button>
               </div>
             </form>
           </div>
@@ -559,26 +563,26 @@ export default function AdminDashboard() {
 
       {/* MODAL DETAIL LEMBAR JAWABAN */}
       {selectedDetail && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', width: '500px', maxHeight: '80vh', overflowY: 'auto' }}>
-            <h3 style={{ marginTop: 0 }}>Detail Lembar Jawaban</h3>
-            <p>Siswa: <b>{selectedDetail.nama}</b> | Kategori: <b>{selectedDetail.kategori}</b> | Skor: <b>{selectedDetail.skor}</b></p>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', zIndex: 100 }}>
+          <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', width: '100%', maxWidth: '450px', maxHeight: '80vh', overflowY: 'auto' }}>
+            <h3 style={{ marginTop: 0, fontSize: '16px' }}>Detail Lembar Jawaban</h3>
+            <p style={{ fontSize: '13px' }}>Siswa: <b>{selectedDetail.nama}</b> | Skor: <b>{selectedDetail.skor}</b></p>
             <hr />
             <div>
               {selectedDetail.detailJawaban?.map((d, i) => (
-                <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}>
-                  <p style={{ margin: '0 0 5px 0', fontWeight: 'bold' }}>{i + 1}. {d.soal}</p>
-                  <p style={{ margin: 0, fontSize: '13px' }}>
-                    Jawaban Siswa: <b>{d.jawabanSiswa}</b> | Status:{' '}
+                <div key={i} style={{ padding: '6px 0', borderBottom: '1px solid #eee' }}>
+                  <p style={{ margin: '0 0 4px 0', fontWeight: 'bold', fontSize: '13px' }}>{i + 1}. {d.soal}</p>
+                  <p style={{ margin: 0, fontSize: '12px' }}>
+                    Jawaban: <b>{d.jawabanSiswa}</b> | Status:{' '}
                     <span style={{ color: d.isCorrect ? 'green' : 'red', fontWeight: 'bold' }}>
-                      {d.isCorrect ? 'BENAR' : `SALAH (Benar: ${d.jawabanBenar})`}
+                      {d.isCorrect ? 'BENAR' : `SALAH (${d.jawabanBenar})`}
                     </span>
                   </p>
                 </div>
               ))}
             </div>
-            <div style={{ textAlign: 'right', marginTop: '15px' }}>
-              <button onClick={() => setSelectedDetail(null)} style={{ padding: '6px 16px', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Tutup</button>
+            <div style={{ textAlign: 'right', marginTop: '12px' }}>
+              <button onClick={() => setSelectedDetail(null)} style={{ padding: '6px 12px', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Tutup</button>
             </div>
           </div>
         </div>
