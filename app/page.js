@@ -1,7 +1,7 @@
-'use client';
+import { NextResponse } from 'next/server';
+import clientPromise from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
-import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   try {
@@ -20,9 +20,12 @@ export async function POST(request) {
     const client = await clientPromise;
     const db = client.db('kuis_tka');
 
-    // Pencarian user (Case-insensitive pada username biar gak ribet huruf kapital/kecil)
+    // Escape special characters pada regex username agar aman dari Regex Injection
+    const escapedUsername = username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Pencarian user (Case-insensitive pada username)
     const user = await db.collection('users').findOne({
-      username: { $regex: new RegExp(`^${username}$`, 'i') },
+      username: { $regex: new RegExp(`^${escapedUsername}$`, 'i') },
       password: password
     });
 
@@ -33,11 +36,12 @@ export async function POST(request) {
       );
     }
 
-    // Response Sukses disesuaikan dengan kebutuhan AdminDashboard & Kuis
+    // Response Sukses disesuaikan dengan kebutuhan Frontend
     return NextResponse.json({
       success: true,
       message: 'Login berhasil!',
       user: {
+        id: user._id.toString(),
         _id: user._id.toString(),
         username: user.username,
         nama: user.nama || user.username,
