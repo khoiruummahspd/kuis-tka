@@ -14,23 +14,27 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (res.ok && data.success) {
-      localStorage.setItem('user', JSON.stringify(data.user));
-      if (data.user.role === 'admin') {
-        router.push('/admin');
+      if (res.ok && data.success) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        if (data.user.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/kuis');
+        }
       } else {
-        router.push('/kuis');
+        setError(data.message || 'Login gagal, periksa username dan password');
       }
-    } else {
-      setError(data.message || 'Login gagal, periksa username dan password');
+    } catch (err) {
+      setError('Terjadi kesalahan koneksi server');
     }
   };
 
@@ -42,17 +46,32 @@ export default function LoginPage() {
         body { margin: 0; background-color: #f7f4ed; }
       `}</style>
 
+      {/* HEADER */}
+      <header style={styles.header}>
+        <div style={styles.logo}>
+          <span style={{ color: '#2563eb' }}>ZEY</span>
+          <span style={{ color: '#d97706' }}>VERSE</span>
+        </div>
+        <div style={styles.navRight}>
+          <span style={styles.helpText}>Butuh bantuan?</span>
+          <button
+            onClick={() => alert('Silakan hubungi administrator sekolah.')}
+            style={styles.btnNav}
+          >
+            Bantuan
+          </button>
+        </div>
+      </header>
+
       {/* MAIN CONTAINER */}
       <main style={styles.mainContainer}>
-        {/* ELEMENT DEKORASI LOKAL/CANVAS */}
+        {/* ELEMENT DEKORASI LOKAL */}
         <div style={styles.decoBoxLeft}></div>
         <div style={styles.decoBoxRight}></div>
 
         {/* FLOATING CARD */}
         <div style={styles.card}>
-          <h2 style={styles.cardTitle}>
-            Login Account
-          </h2>
+          <h2 style={styles.cardTitle}>Login Account</h2>
           <p style={styles.cardSubtitle}>
             Selamat datang kembali! Masukkan kredensial untuk mengakses platform.
           </p>
@@ -118,9 +137,9 @@ export default function LoginPage() {
               />
             </svg>
             Google
-        </button>
-      </div>
-    </main>
+          </button>
+        </div>
+      </main>
 
       {/* FOOTER */}
       <footer style={styles.footer}>
@@ -143,7 +162,7 @@ const styles = {
   },
   header: {
     display: 'flex',
-    justifyContent: 'space-between',
+    justify: 'space-between',
     alignItems: 'center',
     padding: '24px 48px',
   },
@@ -277,21 +296,6 @@ const styles = {
     color: '#aaa',
     padding: '0 10px',
   },
-  roleBadges: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '10px',
-  },
-  badge: {
-    flex: 1,
-    padding: '8px 12px',
-    borderRadius: '8px',
-    border: '1px solid #eee',
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#555',
-    backgroundColor: '#fafafa',
-  },
   googleBtn: {
     width: '100%',
     padding: '12px',
@@ -317,17 +321,5 @@ const styles = {
     color: '#777777',
     borderTop: '1px solid #eee8db',
     backgroundColor: '#f7f4ed',
-  },
-  footerLinks: {
-    display: 'flex',
-    gap: '12px',
-    alignItems: 'center',
-    fontSize: '12px',
-    color: '#aaa',
-  },
-  footerLink: {
-    color: '#666',
-    textDecoration: 'none',
-    fontWeight: '500',
   },
 };
