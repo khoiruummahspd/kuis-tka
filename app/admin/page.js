@@ -180,11 +180,9 @@ export default function AdminDashboard() {
 
   const menuItems = [
     { id: 'overview', label: 'Overview' },
-    { id: 'activity', label: 'Aktivitas Terbaru' },
+    { id: 'results', label: 'Hasil Pengerjaan' },
     { id: 'students', label: 'Data Siswa' },
     { id: 'questions', label: 'Bank Soal' },
-    { id: 'stats', label: 'Hasil & Statistik' },
-    { id: 'account', label: 'Pengaturan Akun' },
   ];
 
   return (
@@ -271,30 +269,45 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* AKTIVITAS TERBARU */}
-        {activeTab === 'activity' && (
+        {/* HASIL PENGERJAAN (SEMUA SISWA TERDAFTAR) */}
+        {activeTab === 'results' && (
           <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', overflow: 'hidden' }}>
-            <h3 style={{ marginTop: 0, fontSize: '16px' }}>Aktivitas Pengerjaan Terbaru</h3>
+            <h3 style={{ marginTop: 0, fontSize: '16px' }}>Hasil Pengerjaan Siswa</h3>
             <div style={{ overflowX: 'auto', width: '100%' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '450px' }}>
                 <thead>
                   <tr style={{ background: '#eee', textAlign: 'left', fontSize: '13px' }}>
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>Nama Siswa</th>
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>Username</th>
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>Matematika</th>
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>Bahasa Indonesia</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd', width: '80px' }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((u) => {
                     const mtk = results.find((r) => r.userId === u._id && r.kategori === 'matematika');
                     const indo = results.find((r) => r.userId === u._id && r.kategori === 'bahasa_indonesia');
+                    const lastResult = results.filter((r) => r.userId === u._id).pop();
+
                     return (
                       <tr key={u._id} style={{ fontSize: '13px' }}>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>{u.nama || u.username}</td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>{u.username}</td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{mtk ? mtk.skor : '-'}</td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{indo ? indo.skor : '-'}</td>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{mtk ? <b>{mtk.skor}</b> : '-'}</td>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{indo ? <b>{indo.skor}</b> : '-'}</td>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>
+                          {lastResult ? (
+                            <button
+                              onClick={() => setSelectedDetail(lastResult)}
+                              style={{ padding: '4px 6px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                            >
+                              Detail
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: '12px', color: '#888' }}>-</span>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}
@@ -316,7 +329,7 @@ export default function AdminDashboard() {
                   value={studentForm.nama}
                   onChange={(e) => setStudentForm({ ...studentForm, nama: e.target.value })}
                   required
-                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', boxSizing: 'border-box' }}
                 />
                 <input
                   type="text"
@@ -324,7 +337,7 @@ export default function AdminDashboard() {
                   value={studentForm.username}
                   onChange={(e) => setStudentForm({ ...studentForm, username: e.target.value })}
                   required
-                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', boxSizing: 'border-box' }}
                 />
                 <input
                   type="text"
@@ -332,7 +345,7 @@ export default function AdminDashboard() {
                   value={studentForm.password}
                   onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })}
                   required
-                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', boxSizing: 'border-box' }}
                 />
                 <button type="submit" style={{ padding: '8px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
                   + Tambah Siswa
@@ -438,7 +451,7 @@ export default function AdminDashboard() {
             {/* MODAL EDIT SOAL */}
             {editQuestion && (
               <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', zIndex: 100 }}>
-                <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', width: '100%', maxWidth: '420px', maxHeight: '90vh', overflowY: 'auto' }}>
+                <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', width: '100%', maxWidth: '420px', maxHeight: '90vh', overflowY: 'auto', boxSizing: 'border-box' }}>
                   <h3 style={{ marginTop: 0, fontSize: '16px' }}>Edit Soal</h3>
                   <form onSubmit={handleSaveEditQuestion}>
                     <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
@@ -449,7 +462,7 @@ export default function AdminDashboard() {
                           value={editQuestion.paket || 1}
                           onChange={(e) => setEditQuestion({ ...editQuestion, paket: parseInt(e.target.value) || 1 })}
                           required
-                          style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                          style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
                         />
                       </div>
                       <div style={{ flex: 1 }}>
@@ -457,7 +470,7 @@ export default function AdminDashboard() {
                         <select
                           value={editQuestion.tingkatKesulitan || 'sedang'}
                           onChange={(e) => setEditQuestion({ ...editQuestion, tingkatKesulitan: e.target.value })}
-                          style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                          style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
                         >
                           <option value="mudah">Mudah</option>
                           <option value="sedang">Sedang</option>
@@ -469,7 +482,7 @@ export default function AdminDashboard() {
                         <select
                           value={editQuestion.kategori || 'matematika'}
                           onChange={(e) => setEditQuestion({ ...editQuestion, kategori: e.target.value })}
-                          style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                          style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
                         >
                           <option value="matematika">Matematika</option>
                           <option value="bahasa_indonesia">Bahasa Indonesia</option>
@@ -484,7 +497,7 @@ export default function AdminDashboard() {
                         value={editQuestion.soal || ''}
                         onChange={(e) => setEditQuestion({ ...editQuestion, soal: e.target.value })}
                         required
-                        style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                        style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -502,7 +515,7 @@ export default function AdminDashboard() {
                               setEditQuestion({ ...editQuestion, opsi: nextOpsi });
                             }}
                             required
-                            style={{ padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                            style={{ padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
                           />
                         ))}
                       </div>
@@ -513,7 +526,7 @@ export default function AdminDashboard() {
                       <select
                         value={editQuestion.jawabanBenar}
                         onChange={(e) => setEditQuestion({ ...editQuestion, jawabanBenar: parseInt(e.target.value) })}
-                        style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                        style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
                       >
                         <option value={0}>Pilihan A</option>
                         <option value={1}>Pilihan B</option>
@@ -536,70 +549,42 @@ export default function AdminDashboard() {
             )}
           </div>
         )}
-
-        {/* HASIL & STATISTIK */}
-        {activeTab === 'stats' && (
-          <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', overflow: 'hidden' }}>
-            <h3 style={{ marginTop: 0, fontSize: '16px' }}>Lembar Hasil Kuis Siswa</h3>
-            <div style={{ overflowX: 'auto', width: '100%' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '350px' }}>
-                <thead>
-                  <tr style={{ background: '#eee', textAlign: 'left', fontSize: '13px' }}>
-                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Siswa</th>
-                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Kategori</th>
-                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Skor</th>
-                    <th style={{ padding: '8px', border: '1px solid #ddd', width: '90px' }}>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {results.map((r, idx) => (
-                    <tr key={idx} style={{ fontSize: '13px' }}>
-                      <td style={{ padding: '8px', border: '1px solid #ddd' }}>{r.nama}</td>
-                      <td style={{ padding: '8px', border: '1px solid #ddd' }}>{r.kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}</td>
-                      <td style={{ padding: '8px', border: '1px solid #ddd' }}><b>{r.skor}</b></td>
-                      <td style={{ padding: '8px', border: '1px solid #ddd' }}>
-                        <button
-                          onClick={() => setSelectedDetail(r)}
-                          style={{ padding: '4px 6px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                        >
-                          Lihat
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* PENGATURAN AKUN */}
-        {activeTab === 'account' && (
-          <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}>
-            <h3 style={{ marginTop: 0, fontSize: '16px' }}>Informasi Akun Admin</h3>
-            <p style={{ margin: '5px 0' }}><b>Username:</b> {user.username}</p>
-            <p style={{ margin: '5px 0' }}><b>Role Status:</b> Administrator</p>
-          </div>
-        )}
       </div>
 
-      {/* MODAL EDIT SISWA */}
+      {/* MODAL EDIT SISWA (FIXED OVERFLOW BUG) */}
       {editUser && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', zIndex: 100 }}>
-          <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', width: '100%', maxWidth: '320px' }}>
-            <h3 style={{ marginTop: 0, fontSize: '16px' }}>Edit Data Siswa</h3>
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', width: '100%', maxWidth: '360px', boxSizing: 'border-box' }}>
+            <h3 style={{ marginTop: 0, fontSize: '16px', marginBottom: '15px' }}>Edit Data Siswa</h3>
             <form onSubmit={handleSaveEditUser}>
-              <div style={{ marginBottom: '8px' }}>
-                <label style={{ display: 'block', fontSize: '12px' }}>Nama:</label>
-                <input type="text" value={editUser.nama} onChange={(e) => setEditUser({ ...editUser, nama: e.target.value })} required style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }} />
-              </div>
-              <div style={{ marginBottom: '8px' }}>
-                <label style={{ display: 'block', fontSize: '12px' }}>Username:</label>
-                <input type="text" value={editUser.username} onChange={(e) => setEditUser({ ...editUser, username: e.target.value })} required style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }} />
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Nama:</label>
+                <input
+                  type="text"
+                  value={editUser.nama}
+                  onChange={(e) => setEditUser({ ...editUser, nama: e.target.value })}
+                  required
+                  style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
+                />
               </div>
               <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontSize: '12px' }}>Password Baru (Opsional):</label>
-                <input type="password" value={editUser.password} onChange={(e) => setEditUser({ ...editUser, password: e.target.value })} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }} />
+                <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Username:</label>
+                <input
+                  type="text"
+                  value={editUser.username}
+                  onChange={(e) => setEditUser({ ...editUser, username: e.target.value })}
+                  required
+                  style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Password Baru (Opsional):</label>
+                <input
+                  type="password"
+                  value={editUser.password}
+                  onChange={(e) => setEditUser({ ...editUser, password: e.target.value })}
+                  style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
+                />
               </div>
               <div style={{ textAlign: 'right' }}>
                 <button type="button" onClick={() => setEditUser(null)} style={{ padding: '6px 12px', marginRight: '6px', background: '#ccc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Batal</button>
@@ -613,7 +598,7 @@ export default function AdminDashboard() {
       {/* MODAL DETAIL LEMBAR JAWABAN */}
       {selectedDetail && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', zIndex: 100 }}>
-          <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', width: '100%', maxWidth: '450px', maxHeight: '80vh', overflowY: 'auto' }}>
+          <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', width: '100%', maxWidth: '450px', maxHeight: '80vh', overflowY: 'auto', boxSizing: 'border-box' }}>
             <h3 style={{ marginTop: 0, fontSize: '16px' }}>Detail Lembar Jawaban</h3>
             <p style={{ fontSize: '13px' }}>Siswa: <b>{selectedDetail.nama}</b> | Skor: <b>{selectedDetail.skor}</b></p>
             <hr />
