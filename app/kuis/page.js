@@ -350,8 +350,9 @@ export default function KuisPage() {
             {isDone && (
               <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
                 <h3 style={{ margin: '0 0 5px 0', color: '#5cb85c' }}>Selamat! Kuis Telah Selesai</h3>
-              <p style={{ fontSize: '13px', color: '#555', marginBottom: '15px' }}>
-                  Selamat kamu sudah mengerjakan kuis </b>.
+             <p style={{ fontSize: '13px', color: '#555', marginBottom: '15px' }}>
+    Selamat kamu sudah mengerjakan <b>kuis</b>.
+</p>
                 </p>
                 <button
                   onClick={() => {
