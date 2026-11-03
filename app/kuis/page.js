@@ -353,12 +353,11 @@ export default function KuisPage() {
              <p style={{ fontSize: '13px', color: '#555', marginBottom: '15px' }}>
     Selamat kamu sudah mengerjakan <b>kuis</b>.
 </p>
-                </p>
-                <button
-                  onClick={() => {
-                    setActiveTab('dashboard');
-                    resetQuizState();
-                  }}
+<button
+  onClick={() => {
+    setActiveTab('dashboard');
+    resetQuizState();
+  }}
                   style={{ padding: '10px 20px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
                 >
                   Kembali ke Dashboard
