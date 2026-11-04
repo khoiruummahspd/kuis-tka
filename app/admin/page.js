@@ -12,11 +12,24 @@ export default function AdminDashboard() {
   const [results, setResults] = useState([]);
   const [questions, setQuestions] = useState([]);
 
-  // Form & Edit States
   const [studentForm, setStudentForm] = useState({ nama: '', username: '', password: '123' });
   const [editUser, setEditUser] = useState(null);
   const [editQuestion, setEditQuestion] = useState(null);
+  const [isAddingQuestion, setIsAddingQuestion] = useState(false);
+  const [newQuestion, setNewQuestion] = useState({
+    paket: 1,
+    tingkatKesulitan: 'sedang',
+    kategori: 'matematika',
+    soal: '',
+    opsi: ['', '', '', ''],
+    jawabanBenar: 0,
+  });
+
   const [selectedDetail, setSelectedDetail] = useState(null);
+
+  const [filterKategori, setFilterKategori] = useState('semua');
+  const [filterKesulitan, setFilterKesulitan] = useState('semua');
+  const [filterPaket, setFilterPaket] = useState('semua');
 
   const router = useRouter();
 
@@ -132,6 +145,35 @@ export default function AdminDashboard() {
     reader.readAsText(file);
   };
 
+  const handleAddQuestionManual = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/admin/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newQuestion),
+      });
+
+      if (res.ok) {
+        setIsAddingQuestion(false);
+        setNewQuestion({
+          paket: 1,
+          tingkatKesulitan: 'sedang',
+          kategori: 'matematika',
+          soal: '',
+          opsi: ['', '', '', ''],
+          jawabanBenar: 0,
+        });
+        fetchDashboardData();
+      } else {
+        alert('Gagal menambah soal');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Terjadi kesalahan saat menyimpan soal');
+    }
+  };
+
   const handleDeleteQuestion = async (questionId) => {
     if (!confirm('Apakah kamu yakin ingin menghapus soal ini?')) return;
     try {
@@ -185,10 +227,16 @@ export default function AdminDashboard() {
     { id: 'questions', label: 'Bank Soal' },
   ];
 
+  const filteredResults = results.filter((r) => {
+    if (filterKategori !== 'semua' && r.kategori !== filterKategori) return false;
+    if (filterKesulitan !== 'semua' && (r.tingkatKesulitan || 'sedang') !== filterKesulitan) return false;
+    if (filterPaket !== 'semua' && (r.paket || 1).toString() !== filterPaket) return false;
+    return true;
+  });
+
   return (
     <div style={{ fontFamily: 'sans-serif', backgroundColor: '#f4f4f9', minHeight: '100vh', padding: '15px' }}>
       
-      {/* HEADER BAR & MENU GARIS TIGA */}
       <div style={{ background: '#fff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <strong style={{ fontSize: '16px', display: 'block' }}>Admin Dashboard</strong>
@@ -203,7 +251,6 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      {/* OVERLAY & PANEL SIDEBAR MENU (DI KIRI) */}
       {isMenuOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 99 }}>
           <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: '240px', background: '#fff', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '2px 0 8px rgba(0,0,0,0.1)' }}>
@@ -249,9 +296,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* MAIN CONTENT AREA */}
       <div>
-        {/* OVERVIEW */}
         {activeTab === 'overview' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
             <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
@@ -269,12 +314,57 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* HASIL PENGERJAAN (SEMUA SISWA TERDAFTAR) */}
         {activeTab === 'results' && (
           <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', overflow: 'hidden' }}>
-            <h3 style={{ marginTop: 0, fontSize: '16px' }}>Hasil Pengerjaan Siswa</h3>
+            <h3 style={{ marginTop: 0, fontSize: '16px', marginBottom: '12px' }}>Hasil Pengerjaan Siswa</h3>
+            
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '15px', background: '#f9f9f9', padding: '10px', borderRadius: '6px', border: '1px solid #eee' }}>
+              <div style={{ flex: '1 1 120px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px' }}>Kategori:</label>
+                <select
+                  value={filterKategori}
+                  onChange={(e) => setFilterKategori(e.target.value)}
+                  style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
+                >
+                  <option value="semua">Semua Kategori</option>
+                  <option value="matematika">Matematika</option>
+                  <option value="bahasa_indonesia">Bahasa Indonesia</option>
+                </select>
+              </div>
+
+              <div style={{ flex: '1 1 120px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px' }}>Kesulitan:</label>
+                <select
+                  value={filterKesulitan}
+                  onChange={(e) => setFilterKesulitan(e.target.value)}
+                  style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
+                >
+                  <option value="semua">Semua Kesulitan</option>
+                  <option value="mudah">Mudah</option>
+                  <option value="sedang">Sedang</option>
+                  <option value="sulit">Sulit</option>
+                </select>
+              </div>
+
+              <div style={{ flex: '1 1 120px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px' }}>Paket Soal:</label>
+                <select
+                  value={filterPaket}
+                  onChange={(e) => setFilterPaket(e.target.value)}
+                  style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
+                >
+                  <option value="semua">Semua Paket</option>
+                  <option value="1">Paket 1</option>
+                  <option value="2">Paket 2</option>
+                  <option value="3">Paket 3</option>
+                  <option value="4">Paket 4</option>
+                  <option value="5">Paket 5</option>
+                </select>
+              </div>
+            </div>
+
             <div style={{ overflowX: 'auto', width: '100%' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '450px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '480px' }}>
                 <thead>
                   <tr style={{ background: '#eee', textAlign: 'left', fontSize: '13px' }}>
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>Nama Siswa</th>
@@ -286,9 +376,10 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {users.map((u) => {
-                    const mtk = results.find((r) => r.userId === u._id && r.kategori === 'matematika');
-                    const indo = results.find((r) => r.userId === u._id && r.kategori === 'bahasa_indonesia');
-                    const lastResult = results.filter((r) => r.userId === u._id).pop();
+                    const studentResults = filteredResults.filter((r) => r.userId === u._id);
+                    const mtk = studentResults.find((r) => r.kategori === 'matematika');
+                    const indo = studentResults.find((r) => r.kategori === 'bahasa_indonesia');
+                    const lastResult = studentResults.slice().pop();
 
                     return (
                       <tr key={u._id} style={{ fontSize: '13px' }}>
@@ -317,7 +408,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* DATA SISWA */}
         {activeTab === 'students' && (
           <div>
             <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px' }}>
@@ -392,23 +482,28 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* BANK SOAL */}
         {activeTab === 'questions' && (
           <div>
-            {/* HEADER & IMPORT JSON */}
-            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
               <h3 style={{ margin: 0, fontSize: '16px' }}>Kelola Bank Soal</h3>
-              <label style={{ padding: '8px 14px', background: '#333', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
-                Import JSON
-                <input type="file" accept=".json" onChange={handleFileUpload} style={{ display: 'none' }} />
-              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => setIsAddingQuestion(true)}
+                  style={{ padding: '8px 14px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}
+                >
+                  + Tambah Soal
+                </button>
+                <label style={{ padding: '8px 14px', background: '#333', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'inline-block' }}>
+                  Import JSON
+                  <input type="file" accept=".json" onChange={handleFileUpload} style={{ display: 'none' }} />
+                </label>
+              </div>
             </div>
 
-            {/* DAFTAR SOAL */}
             <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd' }}>
               <h3 style={{ marginTop: 0, fontSize: '16px', marginBottom: '15px' }}>Daftar Soal ({questions.length})</h3>
               {questions.length === 0 ? (
-                <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>Belum ada soal. Silakan import file JSON.</p>
+                <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>Belum ada soal. Silakan import file JSON atau tambah soal manual.</p>
               ) : (
                 questions.map((q, idx) => (
                   <div key={q._id || idx} style={{ borderBottom: '1px solid #eee', paddingBottom: '12px', marginBottom: '12px' }}>
@@ -448,7 +543,106 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            {/* MODAL EDIT SOAL */}
+            {isAddingQuestion && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', zIndex: 100 }}>
+                <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', width: '100%', maxWidth: '420px', maxHeight: '90vh', overflowY: 'auto', boxSizing: 'border-box' }}>
+                  <h3 style={{ marginTop: 0, fontSize: '16px' }}>Tambah Soal Baru</h3>
+                  <form onSubmit={handleAddQuestionManual}>
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Paket:</label>
+                        <input
+                          type="number"
+                          value={newQuestion.paket}
+                          onChange={(e) => setNewQuestion({ ...newQuestion, paket: parseInt(e.target.value) || 1 })}
+                          required
+                          style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Kesulitan:</label>
+                        <select
+                          value={newQuestion.tingkatKesulitan}
+                          onChange={(e) => setNewQuestion({ ...newQuestion, tingkatKesulitan: e.target.value })}
+                          style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
+                        >
+                          <option value="mudah">Mudah</option>
+                          <option value="sedang">Sedang</option>
+                          <option value="sulit">Sulit</option>
+                        </select>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Kategori:</label>
+                        <select
+                          value={newQuestion.kategori}
+                          onChange={(e) => setNewQuestion({ ...newQuestion, kategori: e.target.value })}
+                          style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
+                        >
+                          <option value="matematika">Matematika</option>
+                          <option value="bahasa_indonesia">Bahasa Indonesia</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: '10px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Pertanyaan:</label>
+                      <input
+                        type="text"
+                        value={newQuestion.soal}
+                        onChange={(e) => setNewQuestion({ ...newQuestion, soal: e.target.value })}
+                        required
+                        style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: '10px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Pilihan Jawaban:</label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {newQuestion.opsi.map((op, idx) => (
+                          <input
+                            key={idx}
+                            type="text"
+                            placeholder={`Pilihan ${String.fromCharCode(65 + idx)}`}
+                            value={op}
+                            onChange={(e) => {
+                              const nextOpsi = [...newQuestion.opsi];
+                              nextOpsi[idx] = e.target.value;
+                              setNewQuestion({ ...newQuestion, opsi: nextOpsi });
+                            }}
+                            required
+                            style={{ padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Kunci Jawaban Benar:</label>
+                      <select
+                        value={newQuestion.jawabanBenar}
+                        onChange={(e) => setNewQuestion({ ...newQuestion, jawabanBenar: parseInt(e.target.value) })}
+                        style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
+                      >
+                        <option value={0}>Pilihan A</option>
+                        <option value={1}>Pilihan B</option>
+                        <option value={2}>Pilihan C</option>
+                        <option value={3}>Pilihan D</option>
+                      </select>
+                    </div>
+
+                    <div style={{ textAlign: 'right' }}>
+                      <button type="button" onClick={() => setIsAddingQuestion(false)} style={{ padding: '6px 12px', marginRight: '6px', background: '#ccc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
+                        Batal
+                      </button>
+                      <button type="submit" style={{ padding: '6px 12px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
+                        Simpan
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
             {editQuestion && (
               <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', zIndex: 100 }}>
                 <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', width: '100%', maxWidth: '420px', maxHeight: '90vh', overflowY: 'auto', boxSizing: 'border-box' }}>
@@ -551,7 +745,6 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* MODAL EDIT SISWA (FIXED OVERFLOW BUG) */}
       {editUser && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', zIndex: 100 }}>
           <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', width: '100%', maxWidth: '360px', boxSizing: 'border-box' }}>
@@ -595,7 +788,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* MODAL DETAIL LEMBAR JAWABAN */}
       {selectedDetail && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', zIndex: 100 }}>
           <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', width: '100%', maxWidth: '450px', maxHeight: '80vh', overflowY: 'auto', boxSizing: 'border-box' }}>
