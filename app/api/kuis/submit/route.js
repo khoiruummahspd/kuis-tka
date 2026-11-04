@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   try {
-    const { userId, nama, kategori, skor, detailJawaban } = await request.json();
+    const { userId, nama, kategori, paket, tingkatKesulitan, skor, detailJawaban } = await request.json();
     const client = await clientPromise;
     const db = client.db('kuis_tka');
 
@@ -11,8 +11,10 @@ export async function POST(request) {
       userId,
       nama,
       kategori,
+      paket: paket ? parseInt(paket) : 1,
+      tingkatKesulitan: tingkatKesulitan || 'sedang',
       skor,
-      detailJawaban, // Menyimpan rincian soal, jawaban siswa, dan status benar/salah
+      detailJawaban,
       tanggal: new Date()
     });
 
