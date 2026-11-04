@@ -1,16 +1,29 @@
-import clientPromise from '@/lib/mongodb';
 import { NextResponse } from 'next/server';
+import clientPromise from '@/lib/mongodb';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
   try {
-    const { username, password } = await request.json();
+    const body = await request.json();
+    const username = body?.username?.toString().trim() || '';
+    const password = body?.password?.toString().trim() || '';
+
+    if (!username || !password) {
+      return NextResponse.json(
+        { success: false, message: 'Username dan Password wajib diisi!' },
+        { status: 400 }
+      );
+    }
 
     const client = await clientPromise;
     const db = client.db('kuis_tka');
-    
+
+    const escapedUsername = username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
     const user = await db.collection('users').findOne({
-      username: username.trim(),
-      password: password.trim()
+      username: { $regex: new RegExp(`^${escapedUsername}$`, 'i') },
+      password: password
     });
 
     if (!user) {
@@ -22,18 +35,21 @@ export async function POST(request) {
 
     return NextResponse.json({
       success: true,
+      message: 'Login berhasil!',
       user: {
         id: user._id.toString(),
+        _id: user._id.toString(),
         username: user.username,
-        nama: user.nama,
-        role: user.role,
+        nama: user.nama || user.username,
+        role: user.role || 'siswa',
         isDefaultPassword: user.isDefaultPassword || false
       }
     });
 
   } catch (error) {
+    console.error('Login Error:', error);
     return NextResponse.json(
-      { success: false, message: 'Gagal terhubung ke database' },
+      { success: false, message: 'Terjadi kesalahan pada server / database' },
       { status: 500 }
     );
   }
