@@ -13,7 +13,9 @@ export default function AdminDashboard() {
   const [questions, setQuestions] = useState([]);
 
   const [studentForm, setStudentForm] = useState({ nama: '', username: '', password: '123' });
+  const [isAddingStudent, setIsAddingStudent] = useState(false);
   const [editUser, setEditUser] = useState(null);
+
   const [editQuestion, setEditQuestion] = useState(null);
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
   const [newQuestion, setNewQuestion] = useState({
@@ -89,7 +91,36 @@ export default function AdminDashboard() {
     if (!res.ok) return alert('Gagal menambah siswa');
 
     setStudentForm({ nama: '', username: '', password: '123' });
+    setIsAddingStudent(false);
     fetchDashboardData();
+  };
+
+  const handleStudentFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const jsonContent = JSON.parse(event.target.result);
+        const res = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(jsonContent),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert(data.message || 'Berhasil import akun siswa!');
+          fetchDashboardData();
+        } else {
+          alert(data.message || 'Gagal import file JSON');
+        }
+      } catch (err) {
+        alert('Format file JSON tidak valid!');
+      }
+    };
+    reader.readAsText(file);
   };
 
   const handleSaveEditUser = async (e) => {
@@ -119,6 +150,25 @@ export default function AdminDashboard() {
       body: JSON.stringify({ userId }),
     });
     fetchDashboardData();
+  };
+
+  const handleDeleteResult = async (resultId) => {
+    if (!confirm('Apakah kamu yakin ingin menghapus riwayat kuis ini? Siswa akan bisa mengerjakan ulang.')) return;
+    try {
+      const res = await fetch('/api/admin/results', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resultId }),
+      });
+      if (res.ok) {
+        fetchDashboardData();
+      } else {
+        alert('Gagal menghapus riwayat kuis');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Terjadi kesalahan saat menghapus');
+    }
   };
 
   const handleFileUpload = (e) => {
@@ -378,7 +428,7 @@ export default function AdminDashboard() {
             </div>
 
             <div style={{ overflowX: 'auto', width: '100%' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '420px' }}>
                 <thead>
                   <tr style={{ background: '#eee', textAlign: 'left', fontSize: '13px' }}>
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>Nama Siswa</th>
@@ -386,7 +436,7 @@ export default function AdminDashboard() {
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>
                       Nilai {filterKategoriResult === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}
                     </th>
-                    <th style={{ padding: '8px', border: '1px solid #ddd', width: '80px' }}>Aksi</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd', width: '120px' }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -408,12 +458,20 @@ export default function AdminDashboard() {
                         </td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>
                           {matchResult ? (
-                            <button
-                              onClick={() => setSelectedDetail(matchResult)}
-                              style={{ padding: '4px 6px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                            >
-                              Detail
-                            </button>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button
+                                onClick={() => setSelectedDetail(matchResult)}
+                                style={{ padding: '4px 6px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                              >
+                                Detail
+                              </button>
+                              <button
+                                onClick={() => handleDeleteResult(matchResult._id)}
+                                style={{ padding: '4px 6px', background: '#d9534f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                              >
+                                Hapus
+                              </button>
+                            </div>
                           ) : (
                             <span style={{ fontSize: '12px', color: '#888' }}>Belum</span>
                           )}
@@ -429,41 +487,24 @@ export default function AdminDashboard() {
 
         {activeTab === 'students' && (
           <div>
-            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px' }}>
-              <h3 style={{ marginTop: 0, fontSize: '16px' }}>Tambah Akun Siswa Baru</h3>
-              <form onSubmit={handleAddStudent} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <input
-                  type="text"
-                  placeholder="Nama Lengkap"
-                  value={studentForm.nama}
-                  onChange={(e) => setStudentForm({ ...studentForm, nama: e.target.value })}
-                  required
-                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', boxSizing: 'border-box' }}
-                />
-                <input
-                  type="text"
-                  placeholder="Username"
-                  value={studentForm.username}
-                  onChange={(e) => setStudentForm({ ...studentForm, username: e.target.value })}
-                  required
-                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', boxSizing: 'border-box' }}
-                />
-                <input
-                  type="text"
-                  placeholder="Password Default"
-                  value={studentForm.password}
-                  onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })}
-                  required
-                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', boxSizing: 'border-box' }}
-                />
-                <button type="submit" style={{ padding: '8px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <h3 style={{ margin: 0, fontSize: '16px' }}>Kelola Data Siswa</h3>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => setIsAddingStudent(true)}
+                  style={{ padding: '8px 14px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}
+                >
                   + Tambah Siswa
                 </button>
-              </form>
+                <label style={{ padding: '8px 14px', background: '#333', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'inline-block' }}>
+                  Import JSON
+                  <input type="file" accept=".json" onChange={handleStudentFileUpload} style={{ display: 'none' }} />
+                </label>
+              </div>
             </div>
 
             <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', overflow: 'hidden' }}>
-              <h3 style={{ marginTop: 0, fontSize: '16px' }}>Daftar Akun Siswa</h3>
+              <h3 style={{ marginTop: 0, fontSize: '16px', marginBottom: '15px' }}>Daftar Akun Siswa ({users.length})</h3>
               <div style={{ overflowX: 'auto', width: '100%' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '350px' }}>
                   <thead>
@@ -498,6 +539,57 @@ export default function AdminDashboard() {
                 </table>
               </div>
             </div>
+
+            {isAddingStudent && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', zIndex: 100 }}>
+                <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', width: '100%', maxWidth: '360px', boxSizing: 'border-box' }}>
+                  <h3 style={{ marginTop: 0, fontSize: '16px', marginBottom: '15px' }}>Tambah Akun Siswa Baru</h3>
+                  <form onSubmit={handleAddStudent} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Nama Lengkap:</label>
+                      <input
+                        type="text"
+                        placeholder="Nama Lengkap"
+                        value={studentForm.nama}
+                        onChange={(e) => setStudentForm({ ...studentForm, nama: e.target.value })}
+                        required
+                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Username:</label>
+                      <input
+                        type="text"
+                        placeholder="Username"
+                        value={studentForm.username}
+                        onChange={(e) => setStudentForm({ ...studentForm, username: e.target.value })}
+                        required
+                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Password Default:</label>
+                      <input
+                        type="text"
+                        placeholder="Password Default"
+                        value={studentForm.password}
+                        onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })}
+                        required
+                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div style={{ textAlign: 'right', marginTop: '6px' }}>
+                      <button type="button" onClick={() => setIsAddingStudent(false)} style={{ padding: '6px 12px', marginRight: '6px', background: '#ccc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
+                        Batal
+                      </button>
+                      <button type="submit" style={{ padding: '6px 12px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
+                        Simpan
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
