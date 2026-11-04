@@ -155,15 +155,17 @@ export default function AdminDashboard() {
   const handleDeleteResult = async (resultId) => {
     if (!confirm('Apakah kamu yakin ingin menghapus riwayat kuis ini? Siswa akan bisa mengerjakan ulang.')) return;
     try {
-      const res = await fetch('/api/admin/results', {
+      const res = await fetch('/api/admin/users', { // <-- PASTIIN DISINI /api/admin/users
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resultId }),
       });
-      if (res.ok) {
+      
+      const data = await res.json();
+      if (res.ok && data.success) {
         fetchDashboardData();
       } else {
-        alert('Gagal menghapus riwayat kuis');
+        alert(data.message || 'Gagal menghapus riwayat kuis');
       }
     } catch (err) {
       console.error(err);
