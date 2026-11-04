@@ -1,60 +1,66 @@
-import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-export async function POST(request) {
-  try {
-    const body = await request.json();
-    const username = body?.username?.toString().trim() || '';
-    const password = body?.password?.toString().trim() || '';
+export default function LoginPage() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-    // Validasi input kosong
-    if (!username || !password) {
-      return NextResponse.json(
-        { success: false, message: 'Username dan Password wajib diisi!' },
-        { status: 400 }
-      );
-    }
+  const router = useRouter();
 
-    const client = await clientPromise;
-    const db = client.db('kuis_tka');
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
 
-    // Escape special characters pada regex username agar aman dari Regex Injection
-    const escapedUsername = username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
 
-    // Pencarian user (Case-insensitive pada username)
-    const user = await db.collection('users').findOne({
-      username: { $regex: new RegExp(`^${escapedUsername}$`, 'i') },
-      password: password
-    });
+      const data = await res.json();
 
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: 'Username atau Password salah!' },
-        { status: 401 }
-      );
-    }
-
-    // Response Sukses disesuaikan dengan kebutuhan Frontend
-    return NextResponse.json({
-      success: true,
-      message: 'Login berhasil!',
-      user: {
-        id: user._id.toString(),
-        _id: user._id.toString(),
-        username: user.username,
-        nama: user.nama || user.username,
-        role: user.role || 'siswa',
-        isDefaultPassword: user.isDefaultPassword || false
+      if (res.ok && data.success) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        if (data.user.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/kuis');
+        }
+      } else {
+        setError(data.message || 'Login gagal, periksa username dan password');
       }
-    });
+    } catch (err) {
+      setError('Terjadi kesalahan koneksi server');
+    }
+  };
 
-  } catch (error) {
-    console.error('Login Error:', error);
-    return NextResponse.json(
-      { success: false, message: 'Terjadi kesalahan pada server / database' },
-      { status: 500 }
-    );
-  }
+  return (
+    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+      <h2>Login Account</h2>
+      {error && <div style={{ color: 'red' }}>{error}</div>}
+      <form onSubmit={handleLogin}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <br /><br />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <br /><br />
+        <button type="submit">Masuk</button>
+      </form>
+    </div>
+  );
 }
