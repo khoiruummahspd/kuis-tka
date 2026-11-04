@@ -32,6 +32,8 @@ export default function AdminDashboard() {
   const [filterPaketResult, setFilterPaketResult] = useState('1');
 
   const [filterKategoriQuestion, setFilterKategoriQuestion] = useState('semua');
+  const [filterKesulitanQuestion, setFilterKesulitanQuestion] = useState('semua');
+  const [filterPaketQuestion, setFilterPaketQuestion] = useState('semua');
 
   const router = useRouter();
 
@@ -229,8 +231,18 @@ export default function AdminDashboard() {
     { id: 'questions', label: 'Bank Soal' },
   ];
 
+  const availableResultPaketList = Array.from(
+    new Set(results.map((r) => (r.paket || 1).toString()))
+  ).sort((a, b) => parseInt(a) - parseInt(b));
+
+  const availableQuestionPaketList = Array.from(
+    new Set(questions.map((q) => (q.paket || 1).toString()))
+  ).sort((a, b) => parseInt(a) - parseInt(b));
+
   const filteredQuestions = questions.filter((q) => {
     if (filterKategoriQuestion !== 'semua' && q.kategori !== filterKategoriQuestion) return false;
+    if (filterKesulitanQuestion !== 'semua' && (q.tingkatKesulitan || 'sedang') !== filterKesulitanQuestion) return false;
+    if (filterPaketQuestion !== 'semua' && (q.paket || 1).toString() !== filterPaketQuestion) return false;
     return true;
   });
 
@@ -299,18 +311,18 @@ export default function AdminDashboard() {
       <div>
         {activeTab === 'overview' && (
           <div>
-            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px' }}>
-              <h2 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#333' }}>
-                Selamat Datang, Admin! 👋
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px' }}>
+              <h2 style={{ margin: '0 0 6px 0', fontSize: '16px', color: '#333' }}>
+                Selamat Datang, Admin
               </h2>
-              <p style={{ margin: 0, color: '#666', fontSize: '13px', lineHeight: '1.5' }}>
-                Kelola data siswa, hasil pengerjaan kuis, serta bank soal melalui panel kontrol ini.
+              <p style={{ margin: 0, color: '#666', fontSize: '13px' }}>
+                Panel kontrol pengelolaan data kuis dan akun siswa.
               </p>
             </div>
 
-            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center', maxWidth: '200px' }}>
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center', width: '50%', boxSizing: 'border-box' }}>
               <span style={{ display: 'block', color: '#666', fontSize: '12px' }}>Total Siswa</span>
-              <strong style={{ fontSize: '28px', color: '#0275d8' }}>{users.length}</strong>
+              <strong style={{ fontSize: '24px', color: '#333' }}>{users.length}</strong>
             </div>
           </div>
         )}
@@ -339,11 +351,15 @@ export default function AdminDashboard() {
                   onChange={(e) => setFilterPaketResult(e.target.value)}
                   style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
                 >
-                  <option value="1">Paket 1</option>
-                  <option value="2">Paket 2</option>
-                  <option value="3">Paket 3</option>
-                  <option value="4">Paket 4</option>
-                  <option value="5">Paket 5</option>
+                  {availableResultPaketList.length === 0 ? (
+                    <option value="1">Paket 1</option>
+                  ) : (
+                    availableResultPaketList.map((pkt) => (
+                      <option key={pkt} value={pkt}>
+                        Paket {pkt}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
 
@@ -388,7 +404,7 @@ export default function AdminDashboard() {
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>{u.nama || u.username}</td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>{u.username}</td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>
-                          {matchResult ? <b style={{ color: matchResult.skor >= 70 ? 'green' : 'red' }}>{matchResult.skor}</b> : '-'}
+                          {matchResult ? <b>{matchResult.skor}</b> : '-'}
                         </td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>
                           {matchResult ? (
@@ -504,25 +520,57 @@ export default function AdminDashboard() {
             </div>
 
             <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '8px' }}>
-                <h3 style={{ margin: 0, fontSize: '16px' }}>Daftar Soal ({filteredQuestions.length})</h3>
+              <div style={{ marginBottom: '15px' }}>
+                <h3 style={{ margin: '0 0 10px 0', fontSize: '16px' }}>Daftar Soal ({filteredQuestions.length})</h3>
                 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '12px', color: '#666' }}>Filter Kategori:</span>
-                  <select
-                    value={filterKategoriQuestion}
-                    onChange={(e) => setFilterKategoriQuestion(e.target.value)}
-                    style={{ padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px' }}
-                  >
-                    <option value="semua">Semua Kategori</option>
-                    <option value="matematika">Matematika</option>
-                    <option value="bahasa_indonesia">Bahasa Indonesia</option>
-                  </select>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', background: '#f9f9f9', padding: '10px', borderRadius: '6px', border: '1px solid #eee' }}>
+                  <div style={{ flex: '1 1 120px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px', fontWeight: 'bold' }}>Mata Pelajaran:</label>
+                    <select
+                      value={filterKategoriQuestion}
+                      onChange={(e) => setFilterKategoriQuestion(e.target.value)}
+                      style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
+                    >
+                      <option value="semua">Semua Kategori</option>
+                      <option value="matematika">Matematika</option>
+                      <option value="bahasa_indonesia">Bahasa Indonesia</option>
+                    </select>
+                  </div>
+
+                  <div style={{ flex: '1 1 120px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px', fontWeight: 'bold' }}>Paket:</label>
+                    <select
+                      value={filterPaketQuestion}
+                      onChange={(e) => setFilterPaketQuestion(e.target.value)}
+                      style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
+                    >
+                      <option value="semua">Semua Paket</option>
+                      {availableQuestionPaketList.map((pkt) => (
+                        <option key={pkt} value={pkt}>
+                          Paket {pkt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div style={{ flex: '1 1 120px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px', fontWeight: 'bold' }}>Kesulitan:</label>
+                    <select
+                      value={filterKesulitanQuestion}
+                      onChange={(e) => setFilterKesulitanQuestion(e.target.value)}
+                      style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
+                    >
+                      <option value="semua">Semua Kesulitan</option>
+                      <option value="mudah">Mudah</option>
+                      <option value="sedang">Sedang</option>
+                      <option value="sulit">Sulit</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
               {filteredQuestions.length === 0 ? (
-                <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>Tidak ada soal yang sesuai dengan kategori ini.</p>
+                <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>Tidak ada soal yang sesuai dengan filter ini.</p>
               ) : (
                 filteredQuestions.map((q, idx) => (
                   <div key={q._id || idx} style={{ borderBottom: '1px solid #eee', paddingBottom: '12px', marginBottom: '12px' }}>
