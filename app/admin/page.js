@@ -27,9 +27,11 @@ export default function AdminDashboard() {
 
   const [selectedDetail, setSelectedDetail] = useState(null);
 
-  const [filterKategori, setFilterKategori] = useState('semua');
-  const [filterKesulitan, setFilterKesulitan] = useState('semua');
-  const [filterPaket, setFilterPaket] = useState('semua');
+  const [filterKategoriResult, setFilterKategoriResult] = useState('matematika');
+  const [filterKesulitanResult, setFilterKesulitanResult] = useState('sedang');
+  const [filterPaketResult, setFilterPaketResult] = useState('1');
+
+  const [filterKategoriQuestion, setFilterKategoriQuestion] = useState('semua');
 
   const router = useRouter();
 
@@ -227,10 +229,8 @@ export default function AdminDashboard() {
     { id: 'questions', label: 'Bank Soal' },
   ];
 
-  const filteredResults = results.filter((r) => {
-    if (filterKategori !== 'semua' && r.kategori !== filterKategori) return false;
-    if (filterKesulitan !== 'semua' && (r.tingkatKesulitan || 'sedang') !== filterKesulitan) return false;
-    if (filterPaket !== 'semua' && (r.paket || 1).toString() !== filterPaket) return false;
+  const filteredQuestions = questions.filter((q) => {
+    if (filterKategoriQuestion !== 'semua' && q.kategori !== filterKategoriQuestion) return false;
     return true;
   });
 
@@ -298,18 +298,19 @@ export default function AdminDashboard() {
 
       <div>
         {activeTab === 'overview' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
-            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
+          <div>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px' }}>
+              <h2 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#333' }}>
+                Selamat Datang, Admin! 👋
+              </h2>
+              <p style={{ margin: 0, color: '#666', fontSize: '13px', lineHeight: '1.5' }}>
+                Kelola data siswa, hasil pengerjaan kuis, serta bank soal melalui panel kontrol ini.
+              </p>
+            </div>
+
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center', maxWidth: '200px' }}>
               <span style={{ display: 'block', color: '#666', fontSize: '12px' }}>Total Siswa</span>
-              <strong style={{ fontSize: '24px' }}>{users.length}</strong>
-            </div>
-            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-              <span style={{ display: 'block', color: '#666', fontSize: '12px' }}>Total Soal</span>
-              <strong style={{ fontSize: '24px' }}>{questions.length}</strong>
-            </div>
-            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-              <span style={{ display: 'block', color: '#666', fontSize: '12px' }}>Kuis Selesai</span>
-              <strong style={{ fontSize: '24px' }}>{results.length}</strong>
+              <strong style={{ fontSize: '28px', color: '#0275d8' }}>{users.length}</strong>
             </div>
           </div>
         )}
@@ -319,41 +320,25 @@ export default function AdminDashboard() {
             <h3 style={{ marginTop: 0, fontSize: '16px', marginBottom: '12px' }}>Hasil Pengerjaan Siswa</h3>
             
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '15px', background: '#f9f9f9', padding: '10px', borderRadius: '6px', border: '1px solid #eee' }}>
-              <div style={{ flex: '1 1 120px' }}>
-                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px' }}>Kategori:</label>
+              <div style={{ flex: '1 1 130px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px', fontWeight: 'bold' }}>Pilih Mata Pelajaran:</label>
                 <select
-                  value={filterKategori}
-                  onChange={(e) => setFilterKategori(e.target.value)}
+                  value={filterKategoriResult}
+                  onChange={(e) => setFilterKategoriResult(e.target.value)}
                   style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
                 >
-                  <option value="semua">Semua Kategori</option>
                   <option value="matematika">Matematika</option>
                   <option value="bahasa_indonesia">Bahasa Indonesia</option>
                 </select>
               </div>
 
               <div style={{ flex: '1 1 120px' }}>
-                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px' }}>Kesulitan:</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px', fontWeight: 'bold' }}>Pilih Paket:</label>
                 <select
-                  value={filterKesulitan}
-                  onChange={(e) => setFilterKesulitan(e.target.value)}
+                  value={filterPaketResult}
+                  onChange={(e) => setFilterPaketResult(e.target.value)}
                   style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
                 >
-                  <option value="semua">Semua Kesulitan</option>
-                  <option value="mudah">Mudah</option>
-                  <option value="sedang">Sedang</option>
-                  <option value="sulit">Sulit</option>
-                </select>
-              </div>
-
-              <div style={{ flex: '1 1 120px' }}>
-                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px' }}>Paket Soal:</label>
-                <select
-                  value={filterPaket}
-                  onChange={(e) => setFilterPaket(e.target.value)}
-                  style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
-                >
-                  <option value="semua">Semua Paket</option>
                   <option value="1">Paket 1</option>
                   <option value="2">Paket 2</option>
                   <option value="3">Paket 3</option>
@@ -361,42 +346,60 @@ export default function AdminDashboard() {
                   <option value="5">Paket 5</option>
                 </select>
               </div>
+
+              <div style={{ flex: '1 1 120px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px', fontWeight: 'bold' }}>Tingkat Kesulitan:</label>
+                <select
+                  value={filterKesulitanResult}
+                  onChange={(e) => setFilterKesulitanResult(e.target.value)}
+                  style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
+                >
+                  <option value="mudah">Mudah</option>
+                  <option value="sedang">Sedang</option>
+                  <option value="sulit">Sulit</option>
+                </select>
+              </div>
             </div>
 
             <div style={{ overflowX: 'auto', width: '100%' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '480px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
                 <thead>
                   <tr style={{ background: '#eee', textAlign: 'left', fontSize: '13px' }}>
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>Nama Siswa</th>
                     <th style={{ padding: '8px', border: '1px solid #ddd' }}>Username</th>
-                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Matematika</th>
-                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>Bahasa Indonesia</th>
+                    <th style={{ padding: '8px', border: '1px solid #ddd' }}>
+                      Nilai {filterKategoriResult === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}
+                    </th>
                     <th style={{ padding: '8px', border: '1px solid #ddd', width: '80px' }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((u) => {
-                    const studentResults = filteredResults.filter((r) => r.userId === u._id);
-                    const mtk = studentResults.find((r) => r.kategori === 'matematika');
-                    const indo = studentResults.find((r) => r.kategori === 'bahasa_indonesia');
-                    const lastResult = studentResults.slice().pop();
+                    const matchResult = results.find(
+                      (r) =>
+                        r.userId === u._id &&
+                        r.kategori === filterKategoriResult &&
+                        (r.paket || 1).toString() === filterPaketResult &&
+                        (r.tingkatKesulitan || 'sedang') === filterKesulitanResult
+                    );
 
                     return (
                       <tr key={u._id} style={{ fontSize: '13px' }}>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>{u.nama || u.username}</td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>{u.username}</td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{mtk ? <b>{mtk.skor}</b> : '-'}</td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{indo ? <b>{indo.skor}</b> : '-'}</td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>
-                          {lastResult ? (
+                          {matchResult ? <b style={{ color: matchResult.skor >= 70 ? 'green' : 'red' }}>{matchResult.skor}</b> : '-'}
+                        </td>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>
+                          {matchResult ? (
                             <button
-                              onClick={() => setSelectedDetail(lastResult)}
+                              onClick={() => setSelectedDetail(matchResult)}
                               style={{ padding: '4px 6px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
                             >
                               Detail
                             </button>
                           ) : (
-                            <span style={{ fontSize: '12px', color: '#888' }}>-</span>
+                            <span style={{ fontSize: '12px', color: '#888' }}>Belum</span>
                           )}
                         </td>
                       </tr>
@@ -484,7 +487,7 @@ export default function AdminDashboard() {
 
         {activeTab === 'questions' && (
           <div>
-            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <h3 style={{ margin: 0, fontSize: '16px' }}>Kelola Bank Soal</h3>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
@@ -501,11 +504,27 @@ export default function AdminDashboard() {
             </div>
 
             <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd' }}>
-              <h3 style={{ marginTop: 0, fontSize: '16px', marginBottom: '15px' }}>Daftar Soal ({questions.length})</h3>
-              {questions.length === 0 ? (
-                <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>Belum ada soal. Silakan import file JSON atau tambah soal manual.</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '8px' }}>
+                <h3 style={{ margin: 0, fontSize: '16px' }}>Daftar Soal ({filteredQuestions.length})</h3>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '12px', color: '#666' }}>Filter Kategori:</span>
+                  <select
+                    value={filterKategoriQuestion}
+                    onChange={(e) => setFilterKategoriQuestion(e.target.value)}
+                    style={{ padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px' }}
+                  >
+                    <option value="semua">Semua Kategori</option>
+                    <option value="matematika">Matematika</option>
+                    <option value="bahasa_indonesia">Bahasa Indonesia</option>
+                  </select>
+                </div>
+              </div>
+
+              {filteredQuestions.length === 0 ? (
+                <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>Tidak ada soal yang sesuai dengan kategori ini.</p>
               ) : (
-                questions.map((q, idx) => (
+                filteredQuestions.map((q, idx) => (
                   <div key={q._id || idx} style={{ borderBottom: '1px solid #eee', paddingBottom: '12px', marginBottom: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
                       <div style={{ fontSize: '11px', color: '#666' }}>
