@@ -5,24 +5,30 @@ import { useRouter } from 'next/navigation';
 
 export default function KuisPage() {
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'quiz', atau 'activity'
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // Stats & Dynamic Options State
   const [userResults, setUserResults] = useState([]);
   const [allQuestions, setAllQuestions] = useState([]);
   const [availableCategories, setAvailableCategories] = useState([]);
   const [availablePackages, setAvailablePackages] = useState([]);
 
+  // Quiz Selection State
   const [kategori, setKategori] = useState('');
   const [paket, setPaket] = useState('');
   const [tingkatKesulitan, setTingkatKesulitan] = useState('sedang');
   
+  // Quiz Flow State
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [alreadyTaken, setAlreadyTaken] = useState(false);
   const [isDone, setIsDone] = useState(false);
   
+  // Storing Selected Option per Question Index
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  // Storing Skipped Questions Index
+  const [skippedQuestions, setSkippedQuestions] = useState({});
 
   const router = useRouter();
 
@@ -76,6 +82,7 @@ export default function KuisPage() {
 
     const currentUserId = user._id || user.id;
 
+    // Cek apakah user sudah pernah mengerjakan kombinasi Kategori + Paket + Kesulitan ini
     const resUser = await fetch('/api/admin/users');
     const dataUser = await resUser.json();
     if (dataUser.success) {
@@ -107,6 +114,7 @@ export default function KuisPage() {
     setQuestions(filtered);
     setCurrentIndex(0);
     setSelectedAnswers({});
+    setSkippedQuestions({});
     setIsDone(false);
     setAlreadyTaken(false);
   };
@@ -116,6 +124,13 @@ export default function KuisPage() {
       ...selectedAnswers,
       [currentIndex]: opsiIdx,
     });
+
+    // Jika soal ini tadinya di-skip (kuning), hapus dari daftar skipped setelah dijawab
+    if (skippedQuestions[currentIndex]) {
+      const copySkipped = { ...skippedQuestions };
+      delete copySkipped[currentIndex];
+      setSkippedQuestions(copySkipped);
+    }
   };
 
   const handleNext = () => {
@@ -131,12 +146,28 @@ export default function KuisPage() {
   };
 
   const handleSkip = () => {
+    // Tandai soal ini sebagai di-skip (kuning) jika belum ada jawaban yang dipilih
+    if (selectedAnswers[currentIndex] === undefined) {
+      setSkippedQuestions({
+        ...skippedQuestions,
+        [currentIndex]: true,
+      });
+    }
+
     if (currentIndex + 1 < questions.length) {
       setCurrentIndex(currentIndex + 1);
     }
   };
 
   const handleSubmitQuiz = async () => {
+    // Cek apakah masih ada soal yang di-skip atau belum dijawab
+    const unansweredCount = questions.filter((_, idx) => selectedAnswers[idx] === undefined).length;
+
+    if (unansweredCount > 0) {
+      alert(`Kamu belum dapat menyelesaikan kuis! Masih ada ${unansweredCount} soal yang belum dijawab atau dilewati (warna kuning). Harap selesaikan seluruh soal terlebih dahulu.`);
+      return;
+    }
+
     if (!confirm('Apakah kamu yakin ingin menyelesaikan kuis ini?')) return;
 
     let totalCorrect = 0;
@@ -181,6 +212,7 @@ export default function KuisPage() {
     setQuestions([]);
     setCurrentIndex(0);
     setSelectedAnswers({});
+    setSkippedQuestions({});
     setIsDone(false);
     setAlreadyTaken(false);
   };
@@ -365,7 +397,7 @@ export default function KuisPage() {
               <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
                 <h3 style={{ color: '#d9534f', margin: '0 0 10px 0', fontSize: '16px' }}>Kuis Sudah Dikerjakan</h3>
                 <p style={{ fontSize: '13px', color: '#555', marginBottom: '15px' }}>
-                  Kamu sudah pernah mengerjakan kuis kategori <b>{kategori}</b> Paket <b>{paket}</b>.
+                  Kamu sudah pernah mengerjakan kuis kategori <b>{kategori === 'matematika' ? 'Matematika' : 'Bahasa Indonesia'}</b> Paket <b>{paket}</b> ({tingkatKesulitan.toUpperCase()}). Kuis hanya dapat dikerjakan 1 kali.
                 </p>
                 <button
                   onClick={() => setAlreadyTaken(false)}
@@ -380,7 +412,7 @@ export default function KuisPage() {
               <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
                 <h3 style={{ margin: '0 0 6px 0', color: '#5cb85c', fontSize: '16px' }}>Kuis Telah Selesai</h3>
                 <p style={{ fontSize: '13px', color: '#555', marginBottom: '15px' }}>
-                  Jawaban kamu berhasil disimpan ke sistem.
+                  Seluruh jawaban kamu berhasil disimpan ke sistem.
                 </p>
                 <button
                   onClick={() => {
@@ -459,8 +491,45 @@ export default function KuisPage() {
 
             {!alreadyTaken && !isDone && questions.length > 0 && (
               <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd' }}>
-                <div style={{ width: '100%', height: '6px', background: '#eee', borderRadius: '4px', overflow: 'hidden', marginBottom: '12px' }}>
-                  <div style={{ height: '100%', background: '#5cb85c', width: `${((currentIndex + 1) / questions.length) * 100}%`, transition: 'width 0.3s' }}></div>
+                
+                {/* NAVIGASI NOMOR SOAL & INDIKATOR WARNA (KUNING / HIJAU / ABU) */}
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                  {questions.map((_, idx) => {
+                    const isCurrent = idx === currentIndex;
+                    const isAnswered = selectedAnswers[idx] !== undefined;
+                    const isSkipped = skippedQuestions[idx] && !isAnswered;
+
+                    let bgColor = '#eee';
+                    let textColor = '#333';
+
+                    if (isAnswered) {
+                      bgColor = '#5cb85c'; // Hijau jika sudah dijawab
+                      textColor = '#fff';
+                    } else if (isSkipped) {
+                      bgColor = '#f0ad4e'; // Kuning jika di-skip
+                      textColor = '#fff';
+                    }
+
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentIndex(idx)}
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          border: isCurrent ? '2px solid #000' : 'none',
+                          borderRadius: '4px',
+                          background: bgColor,
+                          color: textColor,
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        {idx + 1}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <div style={{ fontSize: '11px', color: '#666', fontWeight: 'bold', marginBottom: '8px' }}>
@@ -512,6 +581,7 @@ export default function KuisPage() {
                   })}
                 </div>
 
+                {/* TOMBOL NAVIGASI: KEMBALI, LEWATI, SELANJUTNYA / SELESAI */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '6px', flexWrap: 'wrap' }}>
                   <button
                     onClick={handlePrev}
@@ -531,23 +601,21 @@ export default function KuisPage() {
                   </button>
 
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    {currentIndex + 1 < questions.length && (
-                      <button
-                        onClick={handleSkip}
-                        style={{
-                          padding: '8px 12px',
-                          background: '#f0ad4e',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        Lewati
-                      </button>
-                    )}
+                    <button
+                      onClick={handleSkip}
+                      style={{
+                        padding: '8px 12px',
+                        background: '#f0ad4e',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      Lewati
+                    </button>
 
                     {currentIndex + 1 < questions.length ? (
                       <button
