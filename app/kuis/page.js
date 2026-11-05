@@ -5,28 +5,24 @@ import { useRouter } from 'next/navigation';
 
 export default function KuisPage() {
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' atau 'quiz'
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Stats & Dynamic Options State
   const [userResults, setUserResults] = useState([]);
   const [allQuestions, setAllQuestions] = useState([]);
   const [availableCategories, setAvailableCategories] = useState([]);
   const [availablePackages, setAvailablePackages] = useState([]);
 
-  // Quiz Selection State
   const [kategori, setKategori] = useState('');
   const [paket, setPaket] = useState('');
   const [tingkatKesulitan, setTingkatKesulitan] = useState('sedang');
   
-  // Quiz Flow State
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [skor, setSkor] = useState(0);
-  const [answered, setAnswered] = useState(false);
-  const [isDone, setIsDone] = useState(false);
   const [alreadyTaken, setAlreadyTaken] = useState(false);
-  const [userAnswers, setUserAnswers] = useState([]);
+  const [isDone, setIsDone] = useState(false);
+  
+  const [selectedAnswers, setSelectedAnswers] = useState({});
 
   const router = useRouter();
 
@@ -40,35 +36,33 @@ export default function KuisPage() {
         router.push('/admin');
       } else {
         setUser(parsedUser);
-        fetchInitialData(parsedUser.id);
+        fetchInitialData(parsedUser._id || parsedUser.id);
       }
     }
   }, []);
 
   const fetchInitialData = async (userId) => {
     try {
-      // Fetch data hasil/riwayat
       const resUsers = await fetch('/api/admin/users');
       const dataUsers = await resUsers.json();
       if (dataUsers.success) {
-        const myResults = (dataUsers.results || []).filter((r) => r.userId === userId);
+        const myResults = (dataUsers.results || []).filter(
+          (r) => r.userId === userId || r.userId === userId?.toString()
+        );
         setUserResults(myResults);
       }
 
-      // Fetch data bank soal untuk sinkronisasi Kategori & Paket
       const resQ = await fetch('/api/admin/questions');
       const dataQ = await resQ.json();
       if (dataQ.success) {
         const qList = dataQ.questions || [];
         setAllQuestions(qList);
 
-        // Ambil kategori unik yang ada di database
         const cats = [...new Set(qList.map((q) => q.kategori))].filter(Boolean);
         setAvailableCategories(cats);
         if (cats.length > 0) setKategori(cats[0]);
 
-        // Ambil paket unik yang ada di database
-        const pkgs = [...new Set(qList.map((q) => parseInt(q.paket) || 1))].sort((a, b) => a - b);
+        const pkgs = [...new Set(qList.map((q) => (q.paket ? q.paket.toString() : '1')))].sort();
         setAvailablePackages(pkgs);
         if (pkgs.length > 0) setPaket(pkgs[0]);
       }
@@ -80,12 +74,17 @@ export default function KuisPage() {
   const startKuis = async () => {
     if (!kategori || !paket) return alert('Pilih kategori dan paket soal terlebih dahulu!');
 
-    // Cek apakah user sudah pernah mengerjakan paket & kategori ini
+    const currentUserId = user._id || user.id;
+
     const resUser = await fetch('/api/admin/users');
     const dataUser = await resUser.json();
     if (dataUser.success) {
       const hasDone = (dataUser.results || []).some(
-        (r) => r.userId === user.id && r.kategori === kategori && (parseInt(r.paket) || 1) === parseInt(paket)
+        (r) =>
+          (r.userId === currentUserId || r.userId === currentUserId?.toString()) &&
+          r.kategori === kategori &&
+          (r.paket ? r.paket.toString() : '1') === paket.toString() &&
+          (r.tingkatKesulitan || 'sedang') === tingkatKesulitan
       );
       if (hasDone) {
         setAlreadyTaken(true);
@@ -93,11 +92,10 @@ export default function KuisPage() {
       }
     }
 
-    // Filter soal dari data bank soal yang tersimpan
     const filtered = allQuestions.filter(
       (q) =>
         q.kategori === kategori &&
-        (parseInt(q.paket) || 1) === parseInt(paket) &&
+        (q.paket ? q.paket.toString() : '1') === paket.toString() &&
         (q.tingkatKesulitan || 'sedang') === tingkatKesulitan
     );
 
@@ -108,69 +106,83 @@ export default function KuisPage() {
 
     setQuestions(filtered);
     setCurrentIndex(0);
-    setSkor(0);
-    setAnswered(false);
+    setSelectedAnswers({});
     setIsDone(false);
     setAlreadyTaken(false);
-    setUserAnswers([]);
   };
 
-  const handleAnswer = (selectedIdx) => {
-    if (answered) return;
+  const handleSelectOption = (opsiIdx) => {
+    setSelectedAnswers({
+      ...selectedAnswers,
+      [currentIndex]: opsiIdx,
+    });
+  };
 
-    setAnswered(true);
-    const currentQ = questions[currentIndex];
-    const isCorrect = selectedIdx === currentQ.jawabanBenar;
-
-    const newAnswers = [
-      ...userAnswers,
-      {
-        soal: currentQ.soal,
-        jawabanSiswa: currentQ.opsi[selectedIdx],
-        jawabanBenar: currentQ.opsi[currentQ.jawabanBenar],
-        isCorrect: isCorrect
-      }
-    ];
-    setUserAnswers(newAnswers);
-
-    let currentSkor = skor;
-    if (isCorrect) {
-      currentSkor += Math.round(100 / questions.length);
-      setSkor(currentSkor);
+  const handleNext = () => {
+    if (currentIndex + 1 < questions.length) {
+      setCurrentIndex(currentIndex + 1);
     }
+  };
 
-    setTimeout(async () => {
-      if (currentIndex + 1 < questions.length) {
-        setCurrentIndex(currentIndex + 1);
-        setAnswered(false);
-      } else {
-        setIsDone(true);
-        await fetch('/api/kuis/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: user.id,
-            nama: user.nama || user.username,
-            kategori,
-            paket: parseInt(paket),
-            tingkatKesulitan,
-            skor: currentSkor,
-            detailJawaban: newAnswers
-          }),
-        });
-        fetchInitialData(user.id);
-      }
-    }, 600);
+  const handlePrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const handleSkip = () => {
+    if (currentIndex + 1 < questions.length) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  const handleSubmitQuiz = async () => {
+    if (!confirm('Apakah kamu yakin ingin menyelesaikan kuis ini?')) return;
+
+    let totalCorrect = 0;
+    const detailJawaban = questions.map((q, idx) => {
+      const selectedIdx = selectedAnswers[idx];
+      const isCorrect = selectedIdx !== undefined && selectedIdx === q.jawabanBenar;
+      if (isCorrect) totalCorrect += 1;
+
+      return {
+        soal: q.soal,
+        jawabanSiswa: selectedIdx !== undefined ? q.opsi[selectedIdx] : 'Tidak dijawab',
+        jawabanBenar: q.opsi[q.jawabanBenar],
+        isCorrect: isCorrect,
+      };
+    });
+
+    const finalSkor = Math.round((totalCorrect / questions.length) * 100);
+
+    try {
+      await fetch('/api/kuis/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user._id || user.id,
+          nama: user.nama || user.username,
+          kategori,
+          paket: paket.toString(),
+          tingkatKesulitan,
+          skor: finalSkor,
+          detailJawaban,
+        }),
+      });
+      setIsDone(true);
+      fetchInitialData(user._id || user.id);
+    } catch (err) {
+      console.error(err);
+      alert('Gagal mengirim hasil kuis');
+    }
   };
 
   const resetQuizState = () => {
     setQuestions([]);
     setCurrentIndex(0);
-    setSkor(0);
-    setAnswered(false);
+    setSelectedAnswers({});
     setIsDone(false);
     setAlreadyTaken(false);
-    setUserAnswers([]);
   };
 
   const handleLogout = () => {
@@ -180,19 +192,17 @@ export default function KuisPage() {
 
   if (!user) return null;
 
-  // Ringkasan Statistik User
   const totalKuis = userResults.length;
-  const avgSkor = totalKuis > 0 ? Math.round(userResults.reduce((acc, curr) => acc + (curr.skor || 0), 0) / totalKuis) : 0;
-  const maxSkor = totalKuis > 0 ? Math.max(...userResults.map((r) => r.skor || 0)) : 0;
+  const totalNilai = userResults.reduce((acc, curr) => acc + (curr.skor || 0), 0);
+  const avgSkor = totalKuis > 0 ? Math.round(totalNilai / totalKuis) : 0;
 
   return (
     <div style={{ fontFamily: 'sans-serif', backgroundColor: '#f4f4f9', minHeight: '100vh', padding: '15px', boxSizing: 'border-box' }}>
       
-      {/* HEADER BAR & TOMBOL GARIS TIGA */}
-      <div style={{ background: '#fff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ background: '#fff', padding: '12px 16px', borderRadius: '6px', border: '1px solid #ccc', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <strong style={{ fontSize: '16px', display: 'block' }}>Portal Siswa</strong>
-          <small style={{ color: '#666', fontSize: '12px' }}>{user.nama || user.username}</small>
+          <small style={{ color: '#666', fontSize: '12px' }}>({user.nama || user.username})</small>
         </div>
         
         <button
@@ -203,7 +213,6 @@ export default function KuisPage() {
         </button>
       </div>
 
-      {/* OVERLAY & SIDEBAR MENU (MUNCUL DI KIRI) */}
       {isMenuOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 99 }}>
           <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: '240px', background: '#fff', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '2px 0 8px rgba(0,0,0,0.1)', zIndex: 100 }}>
@@ -234,6 +243,7 @@ export default function KuisPage() {
                 >
                   Dashboard
                 </button>
+
                 <button
                   onClick={() => {
                     setActiveTab('quiz');
@@ -253,6 +263,26 @@ export default function KuisPage() {
                 >
                   Kerjakan Kuis
                 </button>
+
+                <button
+                  onClick={() => {
+                    setActiveTab('activity');
+                    resetQuizState();
+                    setIsMenuOpen(false);
+                  }}
+                  style={{
+                    padding: '10px 12px',
+                    textAlign: 'left',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    background: activeTab === 'activity' ? '#0275d8' : '#fff',
+                    color: activeTab === 'activity' ? '#fff' : '#333',
+                    fontWeight: activeTab === 'activity' ? 'bold' : 'normal',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Aktivitas Kuis
+                </button>
               </div>
             </div>
 
@@ -266,71 +296,71 @@ export default function KuisPage() {
         </div>
       )}
 
-      {/* CONTENT AREA */}
       <div>
-        {/* TAB 1: DASHBOARD / SAMBUTAN + STATISTIK */}
         {activeTab === 'dashboard' && (
           <div>
             <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', marginBottom: '15px' }}>
-              <h2 style={{ marginTop: 0, fontSize: '18px' }}>Selamat Datang, {user.nama || user.username}!</h2>
-              <p style={{ color: '#555', fontSize: '14px', margin: 0, lineHeight: '1.4' }}>
-                Silakan pilih menu <b>Kerjakan Kuis</b> pada navigasi di kanan atas untuk mulai mengerjakan kuis yang tersedia.
+              <h2 style={{ margin: '0 0 6px 0', fontSize: '16px', color: '#333' }}>
+                Selamat Datang, {user.nama || user.username}
+              </h2>
+              <p style={{ margin: 0, color: '#666', fontSize: '13px' }}>
+                Pilih menu Kerjakan Kuis pada navigasi untuk memulai latihan kuis.
               </p>
             </div>
 
-            {/* RINGKASAN STATISTIK USER */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '10px', marginBottom: '15px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '10px' }}>
               <div style={{ background: '#fff', padding: '12px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-                <span style={{ display: 'block', color: '#666', fontSize: '11px' }}>Kuis Dikerjakan</span>
-                <strong style={{ fontSize: '20px' }}>{totalKuis}</strong>
+                <span style={{ display: 'block', color: '#666', fontSize: '12px' }}>Kuis Dikerjakan</span>
+                <strong style={{ fontSize: '20px', color: '#333' }}>{totalKuis}</strong>
               </div>
               <div style={{ background: '#fff', padding: '12px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-                <span style={{ display: 'block', color: '#666', fontSize: '11px' }}>Rata-rata Skor</span>
-                <strong style={{ fontSize: '20px', color: '#0275d8' }}>{avgSkor}</strong>
+                <span style={{ display: 'block', color: '#666', fontSize: '12px' }}>Total Nilai</span>
+                <strong style={{ fontSize: '20px', color: '#333' }}>{totalNilai}</strong>
               </div>
               <div style={{ background: '#fff', padding: '12px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-                <span style={{ display: 'block', color: '#666', fontSize: '11px' }}>Skor Tertinggi</span>
-                <strong style={{ fontSize: '20px', color: '#5cb85c' }}>{maxSkor}</strong>
+                <span style={{ display: 'block', color: '#666', fontSize: '12px' }}>Rata-rata Skor</span>
+                <strong style={{ fontSize: '20px', color: '#333' }}>{avgSkor}</strong>
               </div>
-            </div>
-
-            {/* RIWAYAT PENGERJAAN */}
-            <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', overflow: 'hidden' }}>
-              <h3 style={{ marginTop: 0, fontSize: '15px' }}>Riwayat Hasil Kuis</h3>
-              {userResults.length === 0 ? (
-                <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>Belum ada riwayat kuis yang dikerjakan.</p>
-              ) : (
-                <div style={{ overflowX: 'auto', width: '100%' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '300px' }}>
-                    <thead>
-                      <tr style={{ background: '#eee', textAlign: 'left', fontSize: '12px' }}>
-                        <th style={{ padding: '8px', border: '1px solid #ddd' }}>Kategori</th>
-                        <th style={{ padding: '8px', border: '1px solid #ddd' }}>Paket</th>
-                        <th style={{ padding: '8px', border: '1px solid #ddd' }}>Skor</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {userResults.map((r, idx) => (
-                        <tr key={idx} style={{ fontSize: '13px' }}>
-                          <td style={{ padding: '8px', border: '1px solid #ddd' }}>
-                            {r.kategori === 'matematika' ? 'Matematika' : r.kategori === 'bahasa_indonesia' ? 'Bahasa Indonesia' : r.kategori}
-                          </td>
-                          <td style={{ padding: '8px', border: '1px solid #ddd' }}>Paket {r.paket || 1}</td>
-                          <td style={{ padding: '8px', border: '1px solid #ddd' }}><b>{r.skor}</b></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </div>
           </div>
         )}
 
-        {/* TAB 2: HALAMAN KUIS */}
+        {activeTab === 'activity' && (
+          <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd', overflow: 'hidden' }}>
+            <h3 style={{ marginTop: 0, fontSize: '16px', marginBottom: '15px' }}>Aktivitas Kuis Terbaru</h3>
+            {userResults.length === 0 ? (
+              <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>Belum ada riwayat kuis yang dikerjakan.</p>
+            ) : (
+              <div style={{ overflowX: 'auto', width: '100%' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '350px' }}>
+                  <thead>
+                    <tr style={{ background: '#eee', textAlign: 'left', fontSize: '13px' }}>
+                      <th style={{ padding: '8px', border: '1px solid #ddd' }}>Mata Pelajaran</th>
+                      <th style={{ padding: '8px', border: '1px solid #ddd' }}>Paket</th>
+                      <th style={{ padding: '8px', border: '1px solid #ddd' }}>Kesulitan</th>
+                      <th style={{ padding: '8px', border: '1px solid #ddd', width: '60px' }}>Skor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {userResults.map((r, idx) => (
+                      <tr key={idx} style={{ fontSize: '13px' }}>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>
+                          {r.kategori === 'matematika' ? 'Matematika' : r.kategori === 'bahasa_indonesia' ? 'Bahasa Indonesia' : r.kategori}
+                        </td>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{r.paket || '1'}</td>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{r.tingkatKesulitan || 'sedang'}</td>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}><b>{r.skor}</b></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'quiz' && (
           <div>
-            {/* STATE 1: PERNAH MENGERJAKAN */}
             {alreadyTaken && (
               <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
                 <h3 style={{ color: '#d9534f', margin: '0 0 10px 0', fontSize: '16px' }}>Kuis Sudah Dikerjakan</h3>
@@ -346,36 +376,34 @@ export default function KuisPage() {
               </div>
             )}
 
-            {/* STATE 2: SELESAI KERJAKAN KUIS */}
             {isDone && (
               <div style={{ background: '#fff', padding: '20px', borderRadius: '6px', border: '1px solid #ddd', textAlign: 'center' }}>
-                <h3 style={{ margin: '0 0 5px 0', color: '#5cb85c' }}>Selamat! Kuis Telah Selesai</h3>
+                <h3 style={{ margin: '0 0 6px 0', color: '#5cb85c', fontSize: '16px' }}>Kuis Telah Selesai</h3>
                 <p style={{ fontSize: '13px', color: '#555', marginBottom: '15px' }}>
-                  Selamat kamu sudah mengerjakan <b>kuis</b>.
+                  Jawaban kamu berhasil disimpan ke sistem.
                 </p>
                 <button
                   onClick={() => {
-                    setActiveTab('dashboard');
+                    setActiveTab('activity');
                     resetQuizState();
                   }}
-                  style={{ padding: '10px 20px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                  style={{ padding: '8px 16px', background: '#0275d8', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
                 >
-                  Kembali ke Dashboard
+                  Lihat Hasil
                 </button>
               </div>
             )}
 
-            {/* STATE 3: FORM PILIH SOAL (DATABASE SINKRON) */}
             {!alreadyTaken && !isDone && questions.length === 0 && (
               <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd' }}>
-                <h3 style={{ marginTop: 0, fontSize: '16px' }}>Pilih Parameter Kuis</h3>
+                <h3 style={{ marginTop: 0, fontSize: '16px', marginBottom: '15px' }}>Pilih Parameter Kuis</h3>
                 
                 <div style={{ marginBottom: '12px' }}>
                   <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Kategori Soal:</label>
                   <select
                     value={kategori}
                     onChange={(e) => setKategori(e.target.value)}
-                    style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+                    style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', boxSizing: 'border-box' }}
                   >
                     {availableCategories.length === 0 ? (
                       <option value="">Tidak ada kategori tersedia</option>
@@ -390,17 +418,17 @@ export default function KuisPage() {
                 </div>
 
                 <div style={{ marginBottom: '12px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Paket Soal (Tersedia):</label>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Paket Soal:</label>
                   <select
                     value={paket}
-                    onChange={(e) => setPaket(parseInt(e.target.value))}
-                    style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+                    onChange={(e) => setPaket(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', boxSizing: 'border-box' }}
                   >
                     {availablePackages.length === 0 ? (
                       <option value="">Tidak ada paket tersedia</option>
                     ) : (
                       availablePackages.map((p, idx) => (
-                        <option key={idx} value={p}>Paket {p}</option>
+                        <option key={idx} value={p}>{p}</option>
                       ))
                     )}
                   </select>
@@ -411,7 +439,7 @@ export default function KuisPage() {
                   <select
                     value={tingkatKesulitan}
                     onChange={(e) => setTingkatKesulitan(e.target.value)}
-                    style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+                    style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', boxSizing: 'border-box' }}
                   >
                     <option value="mudah">Mudah</option>
                     <option value="sedang">Sedang</option>
@@ -422,55 +450,139 @@ export default function KuisPage() {
                 <button
                   onClick={startKuis}
                   disabled={availableCategories.length === 0}
-                  style={{ width: '100%', padding: '10px', background: availableCategories.length > 0 ? '#5cb85c' : '#ccc', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                  style={{ width: '100%', padding: '10px', background: availableCategories.length > 0 ? '#5cb85c' : '#ccc', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
                 >
                   Mulai Kuis
                 </button>
               </div>
             )}
 
-            {/* STATE 4: PENGERJAAN SOAL */}
             {!alreadyTaken && !isDone && questions.length > 0 && (
               <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #ddd' }}>
-                {/* Progress Bar */}
-                <div style={{ width: '100%', height: '8px', background: '#eee', borderRadius: '4px', overflow: 'hidden', marginBottom: '12px' }}>
+                <div style={{ width: '100%', height: '6px', background: '#eee', borderRadius: '4px', overflow: 'hidden', marginBottom: '12px' }}>
                   <div style={{ height: '100%', background: '#5cb85c', width: `${((currentIndex + 1) / questions.length) * 100}%`, transition: 'width 0.3s' }}></div>
                 </div>
 
-                <div style={{ fontSize: '12px', color: '#666', fontWeight: 'bold', marginBottom: '8px' }}>
-                  SOAL {currentIndex + 1} DARI {questions.length} (PAKET {paket})
+                <div style={{ fontSize: '11px', color: '#666', fontWeight: 'bold', marginBottom: '8px' }}>
+                  SOAL {currentIndex + 1} DARI {questions.length} • PAKET: {paket}
                 </div>
 
-                <h3 style={{ fontSize: '15px', color: '#333', margin: '0 0 15px 0', lineHeight: '1.4' }}>
+                <h3 style={{ fontSize: '14px', color: '#333', margin: '0 0 15px 0', lineHeight: '1.4' }}>
                   {questions[currentIndex]?.soal}
                 </h3>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {questions[currentIndex]?.opsi.map((opsiText, idx) => (
-                    <button
-                      key={idx}
-                      disabled={answered}
-                      onClick={() => handleAnswer(idx)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                        background: answered ? '#f9f9f9' : '#fff',
-                        cursor: answered ? 'not-allowed' : 'pointer',
-                        textAlign: 'left',
-                        fontSize: '13px',
-                        boxSizing: 'border-box'
-                      }}
-                    >
-                      <strong style={{ minWidth: '24px', height: '24px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#eee', borderRadius: '3px', marginRight: '10px', fontSize: '12px' }}>
-                        {String.fromCharCode(65 + idx)}
-                      </strong>
-                      <span style={{ wordBreak: 'break-word' }}>{opsiText}</span>
-                    </button>
-                  ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+                  {questions[currentIndex]?.opsi.map((opsiText, idx) => {
+                    const isSelected = selectedAnswers[currentIndex] === idx;
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handleSelectOption(idx)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          width: '100%',
+                          padding: '10px 12px',
+                          border: isSelected ? '1px solid #0275d8' : '1px solid #ccc',
+                          borderRadius: '4px',
+                          background: isSelected ? '#e7f1ff' : '#fff',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          fontSize: '13px',
+                          boxSizing: 'border-box'
+                        }}
+                      >
+                        <strong style={{
+                          minWidth: '22px',
+                          height: '22px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: isSelected ? '#0275d8' : '#eee',
+                          color: isSelected ? '#fff' : '#333',
+                          borderRadius: '3px',
+                          marginRight: '10px',
+                          fontSize: '12px'
+                        }}>
+                          {String.fromCharCode(65 + idx)}
+                        </strong>
+                        <span style={{ wordBreak: 'break-word', color: '#333' }}>{opsiText}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '6px', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={handlePrev}
+                    disabled={currentIndex === 0}
+                    style={{
+                      padding: '8px 12px',
+                      background: currentIndex === 0 ? '#eee' : '#666',
+                      color: currentIndex === 0 ? '#aaa' : '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: currentIndex === 0 ? 'not-allowed' : 'pointer',
+                      fontSize: '12px',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Kembali
+                  </button>
+
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    {currentIndex + 1 < questions.length && (
+                      <button
+                        onClick={handleSkip}
+                        style={{
+                          padding: '8px 12px',
+                          background: '#f0ad4e',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Lewati
+                      </button>
+                    )}
+
+                    {currentIndex + 1 < questions.length ? (
+                      <button
+                        onClick={handleNext}
+                        style={{
+                          padding: '8px 12px',
+                          background: '#0275d8',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Selanjutnya
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleSubmitQuiz}
+                        style={{
+                          padding: '8px 14px',
+                          background: '#5cb85c',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Selesai Kuis
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
