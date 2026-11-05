@@ -33,7 +33,7 @@ export async function POST(request) {
         }
 
         return {
-          paket: parseInt(q.paket) || 1,
+          paket: q.paket ? q.paket.toString().trim() : '1',
           tingkatKesulitan: (q.tingkatKesulitan || 'sedang').toLowerCase(),
           kategori: cleanKat || 'matematika',
           soal: q.soal || '',
@@ -54,7 +54,7 @@ export async function POST(request) {
     }
 
     await db.collection('questions').insertOne({
-      paket: parseInt(body.paket) || 1,
+      paket: body.paket ? body.paket.toString().trim() : '1',
       tingkatKesulitan: (body.tingkatKesulitan || 'sedang').toLowerCase(),
       kategori: cleanKat || 'matematika',
       soal: body.soal || '',
@@ -95,7 +95,7 @@ export async function PUT(request) {
       { _id: queryId },
       {
         $set: {
-          paket: parseInt(paket) || 1,
+          paket: paket ? paket.toString().trim() : '1',
           tingkatKesulitan: (tingkatKesulitan || 'sedang').toLowerCase(),
           kategori: cleanKat || 'matematika',
           soal: soal || '',
