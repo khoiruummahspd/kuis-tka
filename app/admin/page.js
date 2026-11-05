@@ -19,7 +19,7 @@ export default function AdminDashboard() {
   const [editQuestion, setEditQuestion] = useState(null);
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
   const [newQuestion, setNewQuestion] = useState({
-    paket: 1,
+    paket: '1 - Ide Pokok',
     tingkatKesulitan: 'sedang',
     kategori: 'matematika',
     soal: '',
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
 
   const [filterKategoriResult, setFilterKategoriResult] = useState('matematika');
   const [filterKesulitanResult, setFilterKesulitanResult] = useState('sedang');
-  const [filterPaketResult, setFilterPaketResult] = useState('1');
+  const [filterPaketResult, setFilterPaketResult] = useState('');
 
   const [filterKategoriQuestion, setFilterKategoriQuestion] = useState('semua');
   const [filterKesulitanQuestion, setFilterKesulitanQuestion] = useState('semua');
@@ -213,7 +213,7 @@ export default function AdminDashboard() {
       if (res.ok && data.success) {
         setIsAddingQuestion(false);
         setNewQuestion({
-          paket: 1,
+          paket: '1 - Ide Pokok',
           tingkatKesulitan: 'sedang',
           kategori: 'matematika',
           soal: '',
@@ -284,17 +284,19 @@ export default function AdminDashboard() {
   ];
 
   const availableResultPaketList = Array.from(
-    new Set(results.map((r) => (r.paket || 1).toString()))
-  ).sort((a, b) => parseInt(a) - parseInt(b));
+    new Set(results.map((r) => (r.paket ? r.paket.toString() : '1')))
+  ).sort();
 
   const availableQuestionPaketList = Array.from(
-    new Set(questions.map((q) => (q.paket || 1).toString()))
-  ).sort((a, b) => parseInt(a) - parseInt(b));
+    new Set(questions.map((q) => (q.paket ? q.paket.toString() : '1')))
+  ).sort();
+
+  const activeResultFilterPaket = filterPaketResult || (availableResultPaketList[0] || '1');
 
   const filteredQuestions = questions.filter((q) => {
     if (filterKategoriQuestion !== 'semua' && q.kategori !== filterKategoriQuestion) return false;
     if (filterKesulitanQuestion !== 'semua' && (q.tingkatKesulitan || 'sedang') !== filterKesulitanQuestion) return false;
-    if (filterPaketQuestion !== 'semua' && (q.paket || 1).toString() !== filterPaketQuestion) return false;
+    if (filterPaketQuestion !== 'semua' && (q.paket ? q.paket.toString() : '1') !== filterPaketQuestion) return false;
     return true;
   });
 
@@ -399,16 +401,16 @@ export default function AdminDashboard() {
               <div style={{ flex: '1 1 120px' }}>
                 <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '4px', fontWeight: 'bold' }}>Pilih Paket:</label>
                 <select
-                  value={filterPaketResult}
+                  value={activeResultFilterPaket}
                   onChange={(e) => setFilterPaketResult(e.target.value)}
                   style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
                 >
                   {availableResultPaketList.length === 0 ? (
-                    <option value="1">Paket 1</option>
+                    <option value="1">1</option>
                   ) : (
                     availableResultPaketList.map((pkt) => (
                       <option key={pkt} value={pkt}>
-                        Paket {pkt}
+                        {pkt}
                       </option>
                     ))
                   )}
@@ -447,7 +449,7 @@ export default function AdminDashboard() {
                       (r) =>
                         r.userId === u._id &&
                         r.kategori === filterKategoriResult &&
-                        (r.paket || 1).toString() === filterPaketResult &&
+                        (r.paket ? r.paket.toString() : '1') === activeResultFilterPaket &&
                         (r.tingkatKesulitan || 'sedang') === filterKesulitanResult
                     );
 
@@ -641,7 +643,7 @@ export default function AdminDashboard() {
                       <option value="semua">Semua Paket</option>
                       {availableQuestionPaketList.map((pkt) => (
                         <option key={pkt} value={pkt}>
-                          Paket {pkt}
+                          {pkt}
                         </option>
                       ))}
                     </select>
@@ -670,7 +672,7 @@ export default function AdminDashboard() {
                   <div key={q._id || idx} style={{ borderBottom: '1px solid #eee', paddingBottom: '12px', marginBottom: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
                       <div style={{ fontSize: '11px', color: '#666' }}>
-                        <b>[{q.kategori?.toUpperCase()}]</b> Paket {q.paket || 1} • {q.tingkatKesulitan || 'sedang'}
+                        <b>[{q.kategori?.toUpperCase()}]</b> Paket {q.paket || '1'} • {q.tingkatKesulitan || 'sedang'}
                       </div>
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <button
@@ -711,11 +713,12 @@ export default function AdminDashboard() {
                   <form onSubmit={handleAddQuestionManual}>
                     <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                       <div style={{ flex: 1 }}>
-                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Paket:</label>
+                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Nama Paket:</label>
                         <input
-                          type="number"
+                          type="text"
+                          placeholder="contoh: 1 - Ide Pokok"
                           value={newQuestion.paket}
-                          onChange={(e) => setNewQuestion({ ...newQuestion, paket: parseInt(e.target.value) || 1 })}
+                          onChange={(e) => setNewQuestion({ ...newQuestion, paket: e.target.value })}
                           required
                           style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
                         />
@@ -811,11 +814,11 @@ export default function AdminDashboard() {
                   <form onSubmit={handleSaveEditQuestion}>
                     <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                       <div style={{ flex: 1 }}>
-                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Paket:</label>
+                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Nama Paket:</label>
                         <input
-                          type="number"
-                          value={editQuestion.paket || 1}
-                          onChange={(e) => setEditQuestion({ ...editQuestion, paket: parseInt(e.target.value) || 1 })}
+                          type="text"
+                          value={editQuestion.paket || '1'}
+                          onChange={(e) => setEditQuestion({ ...editQuestion, paket: e.target.value })}
                           required
                           style={{ width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
                         />
