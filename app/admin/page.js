@@ -287,9 +287,9 @@ export default function AdminDashboard() {
     new Set(results.map((r) => (r.paket ? r.paket.toString() : '1')))
   ).sort();
 
-  const availableQuestionPaketList = Array.from(
-    new Set(questions.map((q) => (q.paket ? q.paket.toString() : '1')))
-  ).sort();
+const availableQuestionPaketList = Array.from(
+  new Set(questions.map((q) => (q.paket ? q.paket.toString().trim() : '')))
+).filter(Boolean).sort();
 
   const activeResultFilterPaket = filterPaketResult || (availableResultPaketList[0] || '1');
 
