@@ -155,12 +155,11 @@ export default function AdminDashboard() {
   const handleDeleteResult = async (resultId) => {
     if (!confirm('Apakah kamu yakin ingin menghapus riwayat kuis ini? Siswa akan bisa mengerjakan ulang.')) return;
     try {
-      const res = await fetch('/api/admin/users', { // <-- PASTIIN DISINI /api/admin/users
+      const res = await fetch('/api/admin/users', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resultId }),
       });
-      
       const data = await res.json();
       if (res.ok && data.success) {
         fetchDashboardData();
@@ -210,7 +209,8 @@ export default function AdminDashboard() {
         body: JSON.stringify(newQuestion),
       });
 
-      if (res.ok) {
+      const data = await res.json();
+      if (res.ok && data.success) {
         setIsAddingQuestion(false);
         setNewQuestion({
           paket: 1,
@@ -222,7 +222,7 @@ export default function AdminDashboard() {
         });
         fetchDashboardData();
       } else {
-        alert('Gagal menambah soal');
+        alert(data.message || 'Gagal menambah soal');
       }
     } catch (err) {
       console.error(err);
@@ -301,7 +301,7 @@ export default function AdminDashboard() {
   return (
     <div style={{ fontFamily: 'sans-serif', backgroundColor: '#f4f4f9', minHeight: '100vh', padding: '15px' }}>
       
-      <div style={{ background: '#fff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ background: '#fff', padding: '12px 16px', borderRadius: '6px', border: '1px solid #ccc', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <strong style={{ fontSize: '16px', display: 'block' }}>Admin Dashboard</strong>
           <small style={{ color: '#666', fontSize: '12px' }}>({user.nama || user.username})</small>
@@ -496,7 +496,7 @@ export default function AdminDashboard() {
                   onClick={() => setIsAddingStudent(true)}
                   style={{ padding: '8px 14px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}
                 >
-                  + Tambah Siswa
+                  Tambah Siswa
                 </button>
                 <label style={{ padding: '8px 14px', background: '#333', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'inline-block' }}>
                   Import JSON
@@ -604,7 +604,7 @@ export default function AdminDashboard() {
                   onClick={() => setIsAddingQuestion(true)}
                   style={{ padding: '8px 14px', background: '#5cb85c', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}
                 >
-                  + Tambah Soal
+                  Tambah Soal
                 </button>
                 <label style={{ padding: '8px 14px', background: '#333', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'inline-block' }}>
                   Import JSON
