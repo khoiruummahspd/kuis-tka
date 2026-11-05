@@ -57,8 +57,9 @@ export default function KuisPage() {
       const resUsers = await fetch('/api/admin/users');
       const dataUsers = await resUsers.json();
       if (dataUsers.success) {
+        const targetId = userId?.toString();
         const myResults = (dataUsers.results || []).filter(
-          (r) => r.userId === userId || r.userId === userId?.toString()
+          (r) => r.userId?.toString() === targetId
         );
         setUserResults(myResults);
       }
@@ -85,18 +86,20 @@ export default function KuisPage() {
   const startKuis = async () => {
     if (!kategori || !paket) return alert('Pilih kategori dan paket soal terlebih dahulu!');
 
-    const currentUserId = user._id || user.id;
+    const currentUserId = (user._id || user.id)?.toString();
 
+    // Cek riwayat dari database secara akurat
     const resUser = await fetch('/api/admin/users');
     const dataUser = await resUser.json();
     if (dataUser.success) {
       const hasDone = (dataUser.results || []).some(
         (r) =>
-          (r.userId === currentUserId || r.userId === currentUserId?.toString()) &&
+          r.userId?.toString() === currentUserId &&
           r.kategori === kategori &&
           (r.paket ? r.paket.toString() : '1') === paket.toString() &&
-          (r.tingkatKesulitan || 'sedang') === tingkatKesulitan
+          (r.tingkatKesulitan || 'sedang').toLowerCase() === tingkatKesulitan.toLowerCase()
       );
+
       if (hasDone) {
         setAlreadyTaken(true);
         return;
@@ -107,7 +110,7 @@ export default function KuisPage() {
       (q) =>
         q.kategori === kategori &&
         (q.paket ? q.paket.toString() : '1') === paket.toString() &&
-        (q.tingkatKesulitan || 'sedang') === tingkatKesulitan
+        (q.tingkatKesulitan || 'sedang').toLowerCase() === tingkatKesulitan.toLowerCase()
     );
 
     if (filtered.length === 0) {
