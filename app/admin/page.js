@@ -952,31 +952,65 @@ const availableQuestionPaketList = Array.from(
         </div>
       )}
 
-      {selectedDetail && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', zIndex: 100 }}>
-          <div style={{ background: '#fff', padding: '15px', borderRadius: '6px', width: '100%', maxWidth: '450px', maxHeight: '80vh', overflowY: 'auto', boxSizing: 'border-box' }}>
-            <h3 style={{ marginTop: 0, fontSize: '16px' }}>Detail Lembar Jawaban</h3>
-            <p style={{ fontSize: '13px' }}>Siswa: <b>{selectedDetail.nama}</b> | Skor: <b>{selectedDetail.skor}</b></p>
-            <hr />
-            <div>
-              {selectedDetail.detailJawaban?.map((d, i) => (
-                <div key={i} style={{ padding: '6px 0', borderBottom: '1px solid #eee' }}>
-                  <p style={{ margin: '0 0 4px 0', fontWeight: 'bold', fontSize: '13px' }}>{i + 1}. {d.soal}</p>
-                  <p style={{ margin: 0, fontSize: '12px' }}>
-                    Jawaban: <b>{d.jawabanSiswa}</b> | Status:{' '}
-                    <span style={{ color: d.isCorrect ? 'green' : 'red', fontWeight: 'bold' }}>
-                      {d.isCorrect ? 'BENAR' : `SALAH (${d.jawabanBenar})`}
-                    </span>
-                  </p>
+      {/* MODAL DETAIL LEMBAR JAWABAN (KHUSUS ADMIN) */}
+{selectedDetail && (
+  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px' }}>
+    <div style={{ background: '#fff', borderRadius: '6px', width: '100%', maxWidth: '480px', maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box' }}>
+      
+      {/* Header Modal */}
+      <div style={{ padding: '12px 15px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, fontSize: '15px', color: '#333' }}>Detail Lembar Jawaban</h3>
+        <button 
+          onClick={() => setSelectedDetail(null)} 
+          style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#666' }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Sub Header Info Siswa */}
+      <div style={{ padding: '10px 15px', background: '#f9f9f9', borderBottom: '1px solid #eee', fontSize: '13px', color: '#444' }}>
+        Siswa: <b>{selectedDetail.nama || 'Siswa'}</b> | Skor: <b>{selectedDetail.skor}</b>
+      </div>
+
+      {/* Daftar Soal & Logika Warna Jawaban */}
+      <div style={{ padding: '15px', overflowY: 'auto', flex: 1 }}>
+        {(selectedDetail.detailJawaban || []).map((d, i) => (
+          <div key={i} style={{ marginBottom: '12px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
+            <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', fontSize: '13px', color: '#333', lineHeight: '1.4' }}>
+              {i + 1}. {d.soal}
+            </p>
+
+            {d.isCorrect ? (
+              /* JIKA JAWABAN BENAR: Jawaban siswa warna hijau + label BENAR (tanpa menampilkan kunci jawaban lagi) */
+              <div style={{ fontSize: '12px', color: '#2e7d32', background: '#e8f5e9', padding: '6px 10px', borderRadius: '4px' }}>
+                Jawaban Siswa: <b>{d.jawabanSiswa}</b> <span style={{ fontWeight: 'bold', marginLeft: '4px' }}>(BENAR)</span>
+              </div>
+            ) : (
+              /* JIKA JAWABAN SALAH: Jawaban siswa warna merah (SALAH) + Kunci jawaban benar warna hijau */
+              <div style={{ fontSize: '12px', background: '#fff5f5', padding: '8px 10px', borderRadius: '4px', border: '1px solid #ffebee' }}>
+                <div style={{ color: '#c62828', marginBottom: '4px' }}>
+                  Jawaban Siswa: <b>{d.jawabanSiswa || 'Tidak dijawab'}</b> <span style={{ fontWeight: 'bold', marginLeft: '4px' }}>(SALAH)</span>
                 </div>
-              ))}
-            </div>
-            <div style={{ textAlign: 'right', marginTop: '12px' }}>
-              <button onClick={() => setSelectedDetail(null)} style={{ padding: '6px 12px', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Tutup</button>
-            </div>
+                <div style={{ color: '#2e7d32', fontWeight: 'bold' }}>
+                  Jawaban Benar: {d.jawabanBenar}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        ))}
+      </div>
+
+      {/* Footer Modal */}
+      <div style={{ padding: '10px 15px', borderTop: '1px solid #eee', textAlign: 'right' }}>
+        <button 
+          onClick={() => setSelectedDetail(null)} 
+          style={{ padding: '6px 14px', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+        >
+          Tutup
+        </button>
+      </div>
+
     </div>
-  );
-}
+  </div>
+)}
