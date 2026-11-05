@@ -6,13 +6,10 @@ export async function GET() {
   try {
     const client = await clientPromise;
     const db = client.db('kuis_tka');
-
-    const users = await db.collection('users').find({ role: { $ne: 'admin' } }).toArray();
-    const results = await db.collection('results').find({}).toArray();
-
-    return NextResponse.json({ success: true, users, results });
+    const questions = await db.collection('questions').find({}).toArray();
+    return NextResponse.json({ success: true, questions });
   } catch (error) {
-    return NextResponse.json({ success: false, message: 'Gagal mengambil data' }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'Error mengambil soal' }, { status: 500 });
   }
 }
 
@@ -27,77 +24,118 @@ export async function POST(request) {
         return NextResponse.json({ success: false, message: 'Data JSON kosong' }, { status: 400 });
       }
 
-      const formattedUsers = body.map((u) => ({
-        nama: u.nama || u.username || 'Siswa',
-        username: u.username || '',
-        password: u.password || '123',
-        role: 'siswa',
-      }));
+      const formattedQuestions = body.map((q) => {
+        let cleanKat = (q.kategori || '').toLowerCase().trim();
+        if (cleanKat.includes('bahasa') || cleanKat.includes('indo')) {
+          cleanKat = 'bahasa_indonesia';
+        } else if (cleanKat.includes('matematika') || cleanKat.includes('mtk')) {
+          cleanKat = 'matematika';
+        }
 
-      await db.collection('users').insertMany(formattedUsers);
-      return NextResponse.json({ success: true, message: `${formattedUsers.length} siswa berhasil ditambahkan` });
+        return {
+          paket: parseInt(q.paket) || 1,
+          tingkatKesulitan: (q.tingkatKesulitan || 'sedang').toLowerCase(),
+          kategori: cleanKat || 'matematika',
+          soal: q.soal || '',
+          opsi: Array.isArray(q.opsi) ? q.opsi : [],
+          jawabanBenar: parseInt(q.jawabanBenar) ?? 0,
+        };
+      });
+
+      await db.collection('questions').insertMany(formattedQuestions);
+      return NextResponse.json({ success: true, message: `${formattedQuestions.length} soal berhasil diunggah` });
     }
 
-    if (!body.username) {
-      return NextResponse.json({ success: false, message: 'Username wajib diisi' }, { status: 400 });
+    let cleanKat = (body.kategori || '').toLowerCase().trim();
+    if (cleanKat.includes('bahasa') || cleanKat.includes('indo')) {
+      cleanKat = 'bahasa_indonesia';
+    } else if (cleanKat.includes('matematika') || cleanKat.includes('mtk')) {
+      cleanKat = 'matematika';
     }
 
-    await db.collection('users').insertOne({
-      nama: body.nama || body.username,
-      username: body.username,
-      password: body.password || '123',
-      role: 'siswa',
+    await db.collection('questions').insertOne({
+      paket: parseInt(body.paket) || 1,
+      tingkatKesulitan: (body.tingkatKesulitan || 'sedang').toLowerCase(),
+      kategori: cleanKat || 'matematika',
+      soal: body.soal || '',
+      opsi: Array.isArray(body.opsi) ? body.opsi : [],
+      jawabanBenar: parseInt(body.jawabanBenar) ?? 0,
     });
 
-    return NextResponse.json({ success: true, message: 'Siswa berhasil ditambahkan' });
+    return NextResponse.json({ success: true, message: 'Soal berhasil disimpan' });
   } catch (error) {
-    return NextResponse.json({ success: false, message: 'Gagal menambah siswa' }, { status: 500 });
+    console.error('Error Add Question:', error);
+    return NextResponse.json({ success: false, message: 'Gagal menyimpan soal' }, { status: 500 });
   }
 }
 
 export async function PUT(request) {
   try {
-    const { userId, nama, username, newPassword } = await request.json();
-    if (!userId) return NextResponse.json({ success: false, message: 'ID user wajib diisi' }, { status: 400 });
+    const { _id, paket, tingkatKesulitan, kategori, soal, opsi, jawabanBenar } = await request.json();
+    if (!_id) return NextResponse.json({ success: false, message: 'ID soal wajib diisi' }, { status: 400 });
 
     const client = await clientPromise;
     const db = client.db('kuis_tka');
 
-    const updateData = { nama, username };
-    if (newPassword && newPassword.trim() !== '') {
-      updateData.password = newPassword;
+    let cleanKat = (kategori || '').toLowerCase().trim();
+    if (cleanKat.includes('bahasa') || cleanKat.includes('indo')) {
+      cleanKat = 'bahasa_indonesia';
+    } else if (cleanKat.includes('matematika') || cleanKat.includes('mtk')) {
+      cleanKat = 'matematika';
     }
 
-    await db.collection('users').updateOne(
-      { _id: new ObjectId(userId) },
-      { $set: updateData }
+    let queryId;
+    try {
+      queryId = new ObjectId(_id);
+    } catch (e) {
+      queryId = _id;
+    }
+
+    await db.collection('questions').updateOne(
+      { _id: queryId },
+      {
+        $set: {
+          paket: parseInt(paket) || 1,
+          tingkatKesulitan: (tingkatKesulitan || 'sedang').toLowerCase(),
+          kategori: cleanKat || 'matematika',
+          soal: soal || '',
+          opsi: Array.isArray(opsi) ? opsi : [],
+          jawabanBenar: parseInt(jawabanBenar) ?? 0,
+        },
+      }
     );
 
-    return NextResponse.json({ success: true, message: 'Data siswa berhasil diperbarui' });
+    return NextResponse.json({ success: true, message: 'Soal berhasil diperbarui' });
   } catch (error) {
-    return NextResponse.json({ success: false, message: 'Gagal memperbarui siswa' }, { status: 500 });
+    console.error('Error Update Question:', error);
+    return NextResponse.json({ success: false, message: 'Gagal memperbarui soal' }, { status: 500 });
   }
 }
 
 export async function DELETE(request) {
   try {
-    const { userId, resultId } = await request.json();
+    const { questionId } = await request.json();
+    if (!questionId) {
+      return NextResponse.json({ success: false, message: 'ID soal wajib disertakan' }, { status: 400 });
+    }
+
     const client = await clientPromise;
     const db = client.db('kuis_tka');
 
-    if (resultId) {
-      await db.collection('results').deleteOne({ _id: new ObjectId(resultId) });
-      return NextResponse.json({ success: true, message: 'Hasil kuis berhasil dihapus' });
+    let queryId;
+    try {
+      queryId = new ObjectId(questionId);
+    } catch (e) {
+      queryId = questionId;
     }
 
-    if (userId) {
-      await db.collection('users').deleteOne({ _id: new ObjectId(userId) });
-      await db.collection('results').deleteMany({ userId });
-      return NextResponse.json({ success: true, message: 'Siswa berhasil dihapus' });
-    }
+    await db.collection('questions').deleteOne({
+      $or: [{ _id: queryId }, { _id: questionId }]
+    });
 
-    return NextResponse.json({ success: false, message: 'ID tidak valid' }, { status: 400 });
+    return NextResponse.json({ success: true, message: 'Soal berhasil dihapus' });
   } catch (error) {
-    return NextResponse.json({ success: false, message: 'Gagal menghapus data' }, { status: 500 });
+    console.error('Error Delete Question:', error);
+    return NextResponse.json({ success: false, message: 'Gagal menghapus soal' }, { status: 500 });
   }
 }
