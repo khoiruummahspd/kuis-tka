@@ -1012,5 +1012,4 @@ const availableQuestionPaketList = Array.from(
       </div>
 
     </div>
-  </div>
 )}
